@@ -1,0 +1,1532 @@
+
+<!doctype html>
+<html lang="pt" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Projeto final de Plataformas (Insper) — microsserviços Spring Boot no EKS">
+      
+      
+        <meta name="author" content="Enzo Canavero">
+      
+      
+        <link rel="canonical" href="https://canavero.github.io/platform/projeto/runbook/">
+      
+      
+        <link rel="prev" href="../eks/">
+      
+      
+        <link rel="next" href="../cicd/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>AWS Runbook - Plataformas 2026.2 — Projeto Store</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="grey" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#aws-runbook-do-zero-ao-eks-e-de-volta-a-zero" class="md-skip">
+          Pular para conteúdo
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Cabeçalho">
+    <a href="../.." title="Plataformas 2026.2 — Projeto Store" class="md-header__button md-logo" aria-label="Plataformas 2026.2 — Projeto Store" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Plataformas 2026.2 — Projeto Store
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              AWS Runbook
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="grey" data-md-color-accent="indigo"  aria-label="Modo escuro"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Modo escuro" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6m0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4M7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="grey" data-md-color-accent="indigo"  aria-label="Modo claro"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Modo claro" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Buscar" placeholder="Buscar" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Pesquisar">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Limpar" aria-label="Limpar" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Inicializando busca
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/canavero/platform" title="Ir para repositório" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    canavero/platform
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navegação" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Plataformas 2026.2 — Projeto Store" class="md-nav__button md-logo" aria-label="Plataformas 2026.2 — Projeto Store" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Plataformas 2026.2 — Projeto Store
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/canavero/platform" title="Ir para repositório" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    canavero/platform
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Projeto
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Projeto
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Visão geral e arquitetura
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gateway/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gateway
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../auth/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Auth
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../account/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Account
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../exchange/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exchange
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bottlenecks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bottlenecks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../local/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Execução local
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../eks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AWS e EKS
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AWS Runbook
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AWS Runbook
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Índice">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Índice
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#0-ferramentas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0. Ferramentas
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-conta-usuario-iam-e-credenciais" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Conta, usuário IAM e credenciais
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-imagens-no-docker-hub" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Imagens no Docker Hub
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-criar-vpc-cluster-eks-node-group" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Criar VPC + cluster EKS + node group
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-opcional-banco-gerenciado-amazon-rds" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. (Opcional) Banco gerenciado — Amazon RDS
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-implantar-a-plataforma" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Implantar a plataforma
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-testar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Testar
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-cicd-deploy-automatico-no-eks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. CI/CD: deploy automático no EKS
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-teste-de-carga-e-video-do-hpa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Teste de carga e vídeo do HPA
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-teardown-obrigatorio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Teardown (obrigatório)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-opcional-ingress-com-alb-e-https" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. (Opcional) Ingress com ALB e HTTPS
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#problemas-comuns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problemas comuns
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cicd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CI/CD
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../load-testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Teste de carga
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../custos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Custos, PaaS e SLA
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../apresentacao/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Apresentação e vídeo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../atividades/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Atividades (roteiros)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../uso-de-ia/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Uso de IA
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Índice">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Índice
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#0-ferramentas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0. Ferramentas
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-conta-usuario-iam-e-credenciais" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Conta, usuário IAM e credenciais
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-imagens-no-docker-hub" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Imagens no Docker Hub
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-criar-vpc-cluster-eks-node-group" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Criar VPC + cluster EKS + node group
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-opcional-banco-gerenciado-amazon-rds" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. (Opcional) Banco gerenciado — Amazon RDS
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-implantar-a-plataforma" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Implantar a plataforma
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-testar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Testar
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-cicd-deploy-automatico-no-eks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. CI/CD: deploy automático no EKS
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-teste-de-carga-e-video-do-hpa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Teste de carga e vídeo do HPA
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-teardown-obrigatorio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Teardown (obrigatório)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-opcional-ingress-com-alb-e-https" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. (Opcional) Ingress com ALB e HTTPS
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#problemas-comuns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problemas comuns
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+  <nav class="md-path" aria-label="Navegação" >
+    <ol class="md-path__list">
+      
+        
+  
+  
+    <li class="md-path__item">
+      <a href="../.." class="md-path__link">
+        
+  <span class="md-ellipsis">
+    Home
+  </span>
+
+      </a>
+    </li>
+  
+
+      
+      
+        
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="../" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    Projeto
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ol>
+  </nav>
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="aws-runbook-do-zero-ao-eks-e-de-volta-a-zero">AWS Runbook — do zero ao EKS (e de volta a zero)</h1>
+<p>Roteiro executável para subir a plataforma <strong>Store</strong> na AWS, gravar o teste de carga e
+<strong>desligar tudo</strong>. Os scripts seguem a ordem do enunciado (páginas <em>AWS</em> e <em>EKS</em>):
+VPC via CloudFormation (template <code>amazon-eks-vpc-private-subnets.yaml</code>) → role do cluster →
+cluster EKS → role do node group → node group só nas subnets privadas → kubeconfig.</p>
+<div class="admonition danger">
+<p class="admonition-title">Isto custa dinheiro</p>
+<p>Com 2 nós <code>t3.medium</code>, 2 NAT Gateways (do template) e 1 Load Balancer, o ambiente custa
+<strong>≈ US$ 0,33/hora (≈ US$ 7,90/dia)</strong> enquanto existir — mesmo parado.
+Planeje uma sessão de ~2–3 h (≈ US$ 1) e rode o <strong>passo 9 (teardown)</strong> no final.
+Detalhes na análise de custos (<code>docs/projeto/custos.md</code>).</p>
+</div>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">Passo</th>
+<th>O quê</th>
+<th style="text-align: right;">Tempo</th>
+<th>Custo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">0</td>
+<td>Ferramentas</td>
+<td style="text-align: right;">5 min</td>
+<td>—</td>
+</tr>
+<tr>
+<td style="text-align: right;">1</td>
+<td>Usuário IAM, access key, <code>aws configure</code>, alerta de orçamento</td>
+<td style="text-align: right;">10 min</td>
+<td>—</td>
+</tr>
+<tr>
+<td style="text-align: right;">2</td>
+<td>Imagens no Docker Hub</td>
+<td style="text-align: right;">5 min</td>
+<td>—</td>
+</tr>
+<tr>
+<td style="text-align: right;">3</td>
+<td><code>./aws/eks-create.sh</code> (VPC + EKS + nós + metrics-server)</td>
+<td style="text-align: right;">20 min</td>
+<td>começa a cobrar</td>
+</tr>
+<tr>
+<td style="text-align: right;">4</td>
+<td>(opcional) <code>./aws/rds-create.sh</code></td>
+<td style="text-align: right;">10 min</td>
+<td>+ US$ 0,02/h</td>
+</tr>
+<tr>
+<td style="text-align: right;">5</td>
+<td><code>./k8s/deploy.sh</code></td>
+<td style="text-align: right;">5 min</td>
+<td>+ Load Balancer</td>
+</tr>
+<tr>
+<td style="text-align: right;">6</td>
+<td>Smoke test no ELB</td>
+<td style="text-align: right;">1 min</td>
+<td>—</td>
+</tr>
+<tr>
+<td style="text-align: right;">7</td>
+<td>CI/CD com deploy no EKS</td>
+<td style="text-align: right;">10 min</td>
+<td>—</td>
+</tr>
+<tr>
+<td style="text-align: right;">8</td>
+<td>Teste de carga + vídeo do HPA</td>
+<td style="text-align: right;">15 min</td>
+<td>—</td>
+</tr>
+<tr>
+<td style="text-align: right;">9</td>
+<td><code>./aws/eks-teardown.sh</code></td>
+<td style="text-align: right;">15 min</td>
+<td>para de cobrar</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="0-ferramentas">0. Ferramentas</h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>brew<span class="w"> </span>install<span class="w"> </span>awscli<span class="w"> </span>kubectl<span class="w">        </span><span class="c1"># macOS (AWS CLI v2)</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>aws<span class="w"> </span>--version<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>kubectl<span class="w"> </span>version<span class="w"> </span>--client
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>docker<span class="w"> </span>--version<span class="w">                   </span><span class="c1"># Docker Desktop ligado (para build/push das imagens)</span>
+</code></pre></div>
+<h2 id="1-conta-usuario-iam-e-credenciais">1. Conta, usuário IAM e credenciais</h2>
+<p>Seguindo a página <em>AWS</em> do enunciado (nunca use o usuário root no dia a dia):</p>
+<ol>
+<li>Console AWS → <strong>IAM → Users → Create user</strong> (ex.: <code>enzo-admin</code>), com acesso ao console.</li>
+<li><strong>Permissions → Attach policies directly → <code>AdministratorAccess</code></strong> (projeto acadêmico; em
+   produção, restrinja).</li>
+<li>Faça login com esse usuário e crie uma <strong>Access key</strong> (IAM → Users → <em>usuário</em> →
+   <em>Security credentials</em> → <em>Create access key</em> → <em>Command Line Interface (CLI)</em>).</li>
+<li>Configure a CLI na região do projeto (<strong>us-east-2</strong>, Ohio — a mesma do enunciado):</li>
+</ol>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>aws<span class="w"> </span>configure<span class="w">            </span><span class="c1"># Access key, Secret, region: us-east-2, output: json</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>aws<span class="w"> </span>configure<span class="w"> </span>list
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>aws<span class="w"> </span>sts<span class="w"> </span>get-caller-identity
+</code></pre></div>
+<p><strong>Alerta de orçamento (recomendado)</strong> — avisa por e-mail se o gasto do mês passar de US$ 20:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nv">ACCOUNT</span><span class="o">=</span><span class="k">$(</span>aws<span class="w"> </span>sts<span class="w"> </span>get-caller-identity<span class="w"> </span>--query<span class="w"> </span>Account<span class="w"> </span>--output<span class="w"> </span>text<span class="k">)</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>aws<span class="w"> </span>budgets<span class="w"> </span>create-budget<span class="w"> </span>--account-id<span class="w"> </span><span class="s2">"</span><span class="nv">$ACCOUNT</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span>--budget<span class="w"> </span><span class="s1">'{"BudgetName":"plataformas","BudgetLimit":{"Amount":"20","Unit":"USD"},"TimeUnit":"MONTHLY","BudgetType":"COST"}'</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span>--notifications-with-subscribers<span class="w"> </span><span class="s1">'[{"Notification":{"NotificationType":"ACTUAL","ComparisonOperator":"GREATER_THAN","Threshold":50},"Subscribers":[{"SubscriptionType":"EMAIL","Address":"SEU-EMAIL@exemplo.com"}]}]'</span>
+</code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">AWS Academy / Learner Lab</p>
+<p>Se a conta não permite criar roles IAM, use a <code>LabRole</code> existente:
+<code>CLUSTER_ROLE_ARN=arn:aws:iam::&lt;conta&gt;:role/LabRole NODE_ROLE_ARN=arn:aws:iam::&lt;conta&gt;:role/LabRole ./aws/eks-create.sh</code>.
+As credenciais temporárias incluem <code>AWS_SESSION_TOKEN</code> (cadastre também no GitHub).</p>
+</div>
+<h2 id="2-imagens-no-docker-hub">2. Imagens no Docker Hub</h2>
+<p>O EKS baixa as imagens <code>DOCKERHUB_USER/&lt;serviço&gt;-service</code>. Os nós são <strong>x86 (t3)</strong>, então a imagem
+precisa de <code>linux/amd64</code> — os dois caminhos abaixo publicam <code>amd64</code> + <code>arm64</code>.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Via CI (recomendado)</label><label for="__tabbed_1_2">Manual (da sua máquina)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p>Em cada repositório de serviço (<code>account-service</code>, <code>auth-service</code>, <code>exchange-service</code>,
+<code>gateway-service</code>): <em>Settings → Secrets and variables → Actions</em>:</p>
+<ul>
+<li><strong>Variable</strong> <code>DOCKERHUB_USERNAME</code> = seu usuário do Docker Hub</li>
+<li><strong>Secret</strong> <code>DOCKERHUB_TOKEN</code> = token criado em <em>Docker Hub → Account settings → Personal access tokens</em> (Read &amp; Write)</li>
+</ul>
+<p>Com o <code>gh</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">for</span><span class="w"> </span>r<span class="w"> </span><span class="k">in</span><span class="w"> </span>account-service<span class="w"> </span>auth-service<span class="w"> </span>exchange-service<span class="w"> </span>gateway-service<span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span>gh<span class="w"> </span>variable<span class="w"> </span><span class="nb">set</span><span class="w"> </span>DOCKERHUB_USERNAME<span class="w"> </span>-b<span class="w"> </span><span class="s2">"&lt;usuario&gt;"</span><span class="w"> </span>-R<span class="w"> </span><span class="s2">"&lt;owner&gt;/</span><span class="nv">$r</span><span class="s2">"</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span>gh<span class="w"> </span>secret<span class="w"> </span><span class="nb">set</span><span class="w"> </span>DOCKERHUB_TOKEN<span class="w"> </span>-b<span class="w"> </span><span class="s2">"&lt;token&gt;"</span><span class="w"> </span>-R<span class="w"> </span><span class="s2">"&lt;owner&gt;/</span><span class="nv">$r</span><span class="s2">"</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span>gh<span class="w"> </span>workflow<span class="w"> </span>run<span class="w"> </span>ci.yml<span class="w"> </span>-R<span class="w"> </span><span class="s2">"&lt;owner&gt;/</span><span class="nv">$r</span><span class="s2">"</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="k">done</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>./scripts/build.sh<span class="w">                                   </span><span class="c1"># gera os target/*.jar</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>docker<span class="w"> </span>login
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="nv">DOCKERHUB_USERNAME</span><span class="o">=</span>&lt;usuario&gt;<span class="w"> </span>./scripts/push-images.sh
+</code></pre></div>
+</div>
+</div>
+</div>
+<h2 id="3-criar-vpc-cluster-eks-node-group">3. Criar VPC + cluster EKS + node group</h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>./aws/eks-create.sh<span class="w">            </span><span class="c1"># padrão: us-east-2, cluster eks-store, 2 x t3.medium</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="c1"># variáveis: AWS_REGION, CLUSTER, NODE_TYPE (ex.: t4g.medium), NODES</span>
+</code></pre></div>
+<p>O script é idempotente (pode ser rodado de novo se cair no meio) e faz:</p>
+<ol>
+<li><code>aws cloudformation deploy</code> do template do enunciado → VPC <code>192.168.0.0/16</code>, 2 subnets
+   públicas (load balancers, tag <code>kubernetes.io/role/elb</code>) e 2 privadas (pods, tag
+   <code>kubernetes.io/role/internal-elb</code>) em duas AZs, 1 NAT Gateway por AZ;</li>
+<li>role <code>eksClusterRole</code> com <code>AmazonEKSClusterPolicy</code>;</li>
+<li><code>aws eks create-cluster</code> (endpoint público, autenticação por <em>access entries</em>) e espera ficar <code>ACTIVE</code>;</li>
+<li>role <code>eksNodeRole</code> com <code>AmazonEKS_CNI_Policy</code>, <code>AmazonEKSWorkerNodePolicy</code>,
+   <code>AmazonEC2ContainerRegistryReadOnly</code> (as três do enunciado);</li>
+<li>node group gerenciado <strong>só nas subnets privadas</strong>;</li>
+<li><code>aws eks update-kubeconfig --name eks-store</code> + <strong>metrics-server</strong> (o HPA depende dele).</li>
+</ol>
+<p>Conferência:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>kubectl<span class="w"> </span>config<span class="w"> </span>get-contexts
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>nodes<span class="w"> </span>-o<span class="w"> </span>wide<span class="w">          </span><span class="c1"># 2 nós Ready, IPs 192.168.128.x / 192.168.192.x (privados)</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>kubectl<span class="w"> </span>top<span class="w"> </span>nodes<span class="w">                  </span><span class="c1"># metrics-server ok (leva ~1 min)</span>
+</code></pre></div>
+<h2 id="4-opcional-banco-gerenciado-amazon-rds">4. (Opcional) Banco gerenciado — Amazon RDS</h2>
+<p>Por padrão o Postgres roda <strong>dentro do cluster</strong> (<code>k8s/postgres.yaml</code>, mais barato, sem
+persistência). Para usar o RDS (PaaS, backups, patching gerenciado):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nv">DATABASE_PASSWORD</span><span class="o">=</span><span class="s1">'uma-senha-forte'</span><span class="w"> </span>./aws/rds-create.sh
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="c1"># imprime o DATABASE_HOST a usar no passo 5</span>
+</code></pre></div>
+<p>Cria <code>db.t4g.micro</code> PostgreSQL 17, 20 GB gp3, Single-AZ, <strong>sem IP público</strong>, nas subnets privadas,
+com security group liberando a porta 5432 só para os nós do EKS.</p>
+<h2 id="5-implantar-a-plataforma">5. Implantar a plataforma</h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">DOCKERHUB_USERNAME</span><span class="o">=</span>&lt;usuario&gt;
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">JWT_SECRET_KEY</span><span class="o">=</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-base64<span class="w"> </span><span class="m">32</span><span class="k">)</span><span class="w">       </span><span class="c1"># guarde se quiser manter as sessões</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>./k8s/deploy.sh
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="c1"># com RDS:</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="c1"># DATABASE_HOST=&lt;endpoint&gt; DATABASE_PASSWORD='...' ./k8s/deploy.sh</span>
+</code></pre></div>
+<p>O script aplica <code>k8s/redis.yaml</code>, <code>k8s/postgres.yaml</code> (se não houver RDS) e o
+<code>api/&lt;serviço&gt;/k8s/k8s.yaml</code> de cada serviço (Secret, ConfigMap, Deployment, Service, HPA),
+sobrescreve os segredos de desenvolvimento e espera os rollouts. No fim imprime a URL do ELB.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods,svc,hpa
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>svc<span class="w"> </span>gateway<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">'{.status.loadBalancer.ingress[0].hostname}'</span>
+</code></pre></div>
+<h2 id="6-testar">6. Testar</h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nv">ELB</span><span class="o">=</span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>svc<span class="w"> </span>gateway<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">'{.status.loadBalancer.ingress[0].hostname}'</span><span class="k">)</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>curl<span class="w"> </span>http://<span class="nv">$ELB</span>/health-check<span class="w">          </span><span class="c1"># {"hostname":"gateway-..."}</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>curl<span class="w"> </span>http://<span class="nv">$ELB</span>/info
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>./scripts/smoke-test.sh<span class="w"> </span>http://<span class="nv">$ELB</span><span class="w">    </span><span class="c1"># registro, login, rotas seguras, exchange</span>
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Cookie <code>Secure</code> em HTTP</p>
+<p>O login devolve o JWT em cookie <code>HttpOnly; Secure; SameSite=None</code> (como no hands-on 3).
+<code>curl</code>/k6/smoke test enviam o cookie explicitamente; <strong>um navegador só o reenvia por HTTPS</strong>
+(para isso: Ingress com ALB + certificado do ACM, seção 10).</p>
+</div>
+<h2 id="7-cicd-deploy-automatico-no-eks">7. CI/CD: deploy automático no EKS</h2>
+<p>O job <code>deploy</code> dos workflows faz <code>kubectl set image deployment/&lt;serviço&gt; &lt;serviço&gt;=&lt;imagem&gt;:&lt;sha&gt;</code>
+e <code>kubectl rollout status</code>. Ele só roda se a variável <code>EKS_CLUSTER</code> existir. Crie um usuário
+dedicado, com acesso mínimo:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="nv">ACCOUNT</span><span class="o">=</span><span class="k">$(</span>aws<span class="w"> </span>sts<span class="w"> </span>get-caller-identity<span class="w"> </span>--query<span class="w"> </span>Account<span class="w"> </span>--output<span class="w"> </span>text<span class="k">)</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>aws<span class="w"> </span>iam<span class="w"> </span>create-user<span class="w"> </span>--user-name<span class="w"> </span>github-deployer
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>aws<span class="w"> </span>iam<span class="w"> </span>put-user-policy<span class="w"> </span>--user-name<span class="w"> </span>github-deployer<span class="w"> </span>--policy-name<span class="w"> </span>eks-describe<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">  </span>--policy-document<span class="w"> </span><span class="s1">'{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":"eks:DescribeCluster","Resource":"*"}]}'</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>aws<span class="w"> </span>iam<span class="w"> </span>create-access-key<span class="w"> </span>--user-name<span class="w"> </span>github-deployer<span class="w">          </span><span class="c1"># anote AccessKeyId/SecretAccessKey</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>aws<span class="w"> </span>eks<span class="w"> </span>create-access-entry<span class="w"> </span>--cluster-name<span class="w"> </span>eks-store<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="w">  </span>--principal-arn<span class="w"> </span>arn:aws:iam::<span class="nv">$ACCOUNT</span>:user/github-deployer
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>aws<span class="w"> </span>eks<span class="w"> </span>associate-access-policy<span class="w"> </span>--cluster-name<span class="w"> </span>eks-store<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="w">  </span>--principal-arn<span class="w"> </span>arn:aws:iam::<span class="nv">$ACCOUNT</span>:user/github-deployer<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="w">  </span>--policy-arn<span class="w"> </span>arn:aws:eks::aws:cluster-access-policy/AmazonEKSEditPolicy<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="w">  </span>--access-scope<span class="w"> </span><span class="nv">type</span><span class="o">=</span>namespace,namespaces<span class="o">=</span>default
+</code></pre></div>
+<p>Cadastre nos 4 repositórios de serviço:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="k">for</span><span class="w"> </span>r<span class="w"> </span><span class="k">in</span><span class="w"> </span>account-service<span class="w"> </span>auth-service<span class="w"> </span>exchange-service<span class="w"> </span>gateway-service<span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">  </span>gh<span class="w"> </span>variable<span class="w"> </span><span class="nb">set</span><span class="w"> </span>EKS_CLUSTER<span class="w"> </span>-b<span class="w"> </span>eks-store<span class="w"> </span>-R<span class="w"> </span><span class="s2">"&lt;owner&gt;/</span><span class="nv">$r</span><span class="s2">"</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">  </span>gh<span class="w"> </span>variable<span class="w"> </span><span class="nb">set</span><span class="w"> </span>AWS_REGION<span class="w"> </span>-b<span class="w"> </span>us-east-2<span class="w"> </span>-R<span class="w"> </span><span class="s2">"&lt;owner&gt;/</span><span class="nv">$r</span><span class="s2">"</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">  </span>gh<span class="w"> </span>secret<span class="w"> </span><span class="nb">set</span><span class="w"> </span>AWS_ACCESS_KEY_ID<span class="w"> </span>-b<span class="w"> </span><span class="s2">"&lt;AccessKeyId&gt;"</span><span class="w"> </span>-R<span class="w"> </span><span class="s2">"&lt;owner&gt;/</span><span class="nv">$r</span><span class="s2">"</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">  </span>gh<span class="w"> </span>secret<span class="w"> </span><span class="nb">set</span><span class="w"> </span>AWS_SECRET_ACCESS_KEY<span class="w"> </span>-b<span class="w"> </span><span class="s2">"&lt;SecretAccessKey&gt;"</span><span class="w"> </span>-R<span class="w"> </span><span class="s2">"&lt;owner&gt;/</span><span class="nv">$r</span><span class="s2">"</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="k">done</span>
+</code></pre></div>
+<p>Teste: um commit em <code>main</code> de qualquer serviço → Actions: <strong>Build &amp; Test → Docker Hub → Deploy EKS</strong>.</p>
+<h2 id="8-teste-de-carga-e-video-do-hpa">8. Teste de carga e vídeo do HPA</h2>
+<p>Ver <code>load-test/README.md</code> (página <em>Teste de carga</em> do site) — 3 terminais (HPA, pods, gerador de carga
+busybox do enunciado) e a alternativa com k6.</p>
+<h2 id="9-teardown-obrigatorio">9. Teardown (obrigatório)</h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>./aws/eks-teardown.sh
+</code></pre></div>
+<p>Remove, nesta ordem: Service <code>LoadBalancer</code>/Ingress (libera o ELB) → RDS (se houver) →
+node group → cluster → stack da VPC (subnets, NAT Gateways, Elastic IPs). As roles IAM ficam
+(não custam nada). Depois confira no console, região <strong>us-east-2</strong>:</p>
+<ul class="task-list">
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> EKS → Clusters: vazio</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> EC2 → Instances, Load Balancers, NAT Gateways, Elastic IPs, Volumes: vazios</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> RDS → Databases: vazio</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> CloudFormation → Stacks: sem <code>eks-store-vpc</code></li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> (opcional) IAM → <code>github-deployer</code> → desative a access key</li>
+</ul>
+<h2 id="10-opcional-ingress-com-alb-e-https">10. (Opcional) Ingress com ALB e HTTPS</h2>
+<p>O padrão do projeto é o <code>Service</code> <code>type: LoadBalancer</code> do gateway (um Classic Load Balancer, sem
+componentes extras). Para um <strong>ALB</strong> com Ingress (<code>k8s/ingress.yaml</code>) é preciso o
+AWS Load Balancer Controller:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>brew<span class="w"> </span>install<span class="w"> </span>eksctl<span class="w"> </span>helm
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>eksctl<span class="w"> </span>utils<span class="w"> </span>associate-iam-oidc-provider<span class="w"> </span>--cluster<span class="w"> </span>eks-store<span class="w"> </span>--approve
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>curl<span class="w"> </span>-sO<span class="w"> </span>https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/main/docs/install/iam_policy.json
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>aws<span class="w"> </span>iam<span class="w"> </span>create-policy<span class="w"> </span>--policy-name<span class="w"> </span>AWSLoadBalancerControllerIAMPolicy<span class="w"> </span>--policy-document<span class="w"> </span>file://iam_policy.json
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>eksctl<span class="w"> </span>create<span class="w"> </span>iamserviceaccount<span class="w"> </span>--cluster<span class="w"> </span>eks-store<span class="w"> </span>--namespace<span class="w"> </span>kube-system<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="w">  </span>--name<span class="w"> </span>aws-load-balancer-controller<span class="w"> </span>--approve<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="w">  </span>--attach-policy-arn<span class="w"> </span>arn:aws:iam::<span class="nv">$ACCOUNT</span>:policy/AWSLoadBalancerControllerIAMPolicy
+<a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a>helm<span class="w"> </span>repo<span class="w"> </span>add<span class="w"> </span>eks<span class="w"> </span>https://aws.github.io/eks-charts<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>helm<span class="w"> </span>repo<span class="w"> </span>update
+<a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a>helm<span class="w"> </span>install<span class="w"> </span>aws-load-balancer-controller<span class="w"> </span>eks/aws-load-balancer-controller<span class="w"> </span>-n<span class="w"> </span>kube-system<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a><span class="w">  </span>--set<span class="w"> </span><span class="nv">clusterName</span><span class="o">=</span>eks-store<span class="w"> </span>--set<span class="w"> </span>serviceAccount.create<span class="o">=</span><span class="nb">false</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a><span class="w">  </span>--set<span class="w"> </span>serviceAccount.name<span class="o">=</span>aws-load-balancer-controller
+<a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>k8s/ingress.yaml
+<a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a>kubectl<span class="w"> </span>get<span class="w"> </span>ingress<span class="w"> </span>store<span class="w">        </span><span class="c1"># ADDRESS = DNS do ALB</span>
+</code></pre></div>
+<p>HTTPS: certificado no ACM + anotações <code>alb.ingress.kubernetes.io/certificate-arn</code> e
+<code>alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'</code>. Lembre de apagar o Ingress antes do
+teardown (o script já faz isso).</p>
+<h2 id="problemas-comuns">Problemas comuns</h2>
+<table>
+<thead>
+<tr>
+<th>Sintoma</th>
+<th>Causa provável</th>
+<th>Solução</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pod <code>Pending</code></td>
+<td>CPU/memória insuficiente nos nós</td>
+<td><code>kubectl describe pod</code>; reduza <code>maxReplicas</code> do HPA ou aumente o node group (<code>aws eks update-nodegroup-config --scaling-config desiredSize=3 ...</code>)</td>
+</tr>
+<tr>
+<td><code>ImagePullBackOff</code></td>
+<td>nome/tag errado, imagem só <code>arm64</code>, limite de pulls do Docker Hub</td>
+<td>confira <code>DOCKERHUB_USERNAME</code>, publique <code>linux/amd64</code>; use <code>imagePullSecrets</code> ou ECR</td>
+</tr>
+<tr>
+<td>HPA <code>cpu: &lt;unknown&gt;/50%</code></td>
+<td>metrics-server ausente ou iniciando</td>
+<td><code>kubectl get deploy -n kube-system metrics-server</code>; aguarde 1–2 min</td>
+</tr>
+<tr>
+<td><code>account</code> em <code>CrashLoopBackOff</code></td>
+<td>banco inacessível</td>
+<td><code>kubectl logs deploy/account</code>; Postgres pronto? endpoint/SG do RDS?</td>
+</tr>
+<tr>
+<td><code>EXTERNAL-IP &lt;pending&gt;</code></td>
+<td>ELB sendo criado / subnets sem tag</td>
+<td>aguarde 2–3 min; o template já marca as subnets públicas</td>
+</tr>
+<tr>
+<td>Teardown da VPC falha</td>
+<td>ELB/ENI ainda existe</td>
+<td>rode o teardown de novo; apague o Load Balancer órfão no console EC2</td>
+</tr>
+<tr>
+<td>401 no navegador após login</td>
+<td>cookie <code>Secure</code> em HTTP</td>
+<td>use HTTPS (seção 10) ou teste via curl/smoke test</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Voltar para o topo
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["content.code.copy", "content.code.annotate", "content.tabs.link", "navigation.instant", "navigation.top", "navigation.path", "navigation.tracking", "navigation.expand"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copiado para \u00e1rea de transfer\u00eancia", "clipboard.copy": "Copiar para \u00e1rea de transfer\u00eancia", "search.result.more.one": "mais 1 nesta p\u00e1gina", "search.result.more.other": "# mais nesta p\u00e1gina", "search.result.none": "Nenhum documento encontrado", "search.result.one": "1 documento encontrado", "search.result.other": "# documentos encontrados", "search.result.placeholder": "Digite para iniciar a busca", "search.result.term.missing": "Ausente", "select.version": "Selecione a vers\u00e3o"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+    
+  </body>
+</html>
