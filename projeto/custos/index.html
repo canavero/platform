@@ -729,10 +729,32 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#a-ambiente-do-projeto-como-os-scripts-criam" class="md-nav__link">
+  <a href="#a-ambiente-atual-otimizado-como-os-scripts-criam-agora" class="md-nav__link">
     <span class="md-ellipsis">
       
-        A — Ambiente do projeto (como os scripts criam)
+        A — Ambiente atual, otimizado (como os scripts criam agora)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#otimizacoes-aplicadas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Otimizações aplicadas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a0-primeiro-deploy-antes-da-otimizacao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A0 — Primeiro deploy (antes da otimização)
       
     </span>
   </a>
@@ -744,17 +766,6 @@
     <span class="md-ellipsis">
       
         Custo real do deploy de 15/11/2026
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#b-otimizado-mesma-arquitetura-mais-barato" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        B — Otimizado (mesma arquitetura, mais barato)
       
     </span>
   </a>
@@ -1008,10 +1019,32 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#a-ambiente-do-projeto-como-os-scripts-criam" class="md-nav__link">
+  <a href="#a-ambiente-atual-otimizado-como-os-scripts-criam-agora" class="md-nav__link">
     <span class="md-ellipsis">
       
-        A — Ambiente do projeto (como os scripts criam)
+        A — Ambiente atual, otimizado (como os scripts criam agora)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#otimizacoes-aplicadas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Otimizações aplicadas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a0-primeiro-deploy-antes-da-otimizacao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A0 — Primeiro deploy (antes da otimização)
       
     </span>
   </a>
@@ -1023,17 +1056,6 @@
     <span class="md-ellipsis">
       
         Custo real do deploy de 15/11/2026
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#b-otimizado-mesma-arquitetura-mais-barato" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        B — Otimizado (mesma arquitetura, mais barato)
       
     </span>
   </a>
@@ -1213,9 +1235,10 @@
   <a href="https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/index.json">AWS Price List</a>
   (EKS, ELB, EC2, RDS e IPv4 público conferidos nos arquivos oficiais; NAT Gateway, EBS e
   ElastiCache pelas páginas de preço de cada serviço). Impostos não incluídos.</li>
-<li>Arquitetura exatamente como os scripts criaram no deploy real: template de VPC do enunciado
-  (<strong>2 NAT Gateways</strong>), 2 nós <code>t3.medium</code>, <strong>RDS PostgreSQL <code>db.t4g.micro</code></strong>, Redis dentro do
-  cluster, imagens no <strong>ECR</strong> e 1 Classic Load Balancer (Service <code>LoadBalancer</code> do gateway).</li>
+<li>Arquitetura exatamente como os scripts criam (cenário A): template de VPC do enunciado com
+  <strong>1 NAT Gateway</strong>, 2 nós <code>t3.medium</code> <strong>Spot</strong>, Postgres e Redis dentro do cluster, imagens no
+  <strong>ECR</strong> e 1 Classic Load Balancer (Service <code>LoadBalancer</code> do gateway). O primeiro deploy
+  (2 NAT, nós on-demand, RDS) está no cenário A0, para comparação.</li>
 </ul>
 <table>
 <thead>
@@ -1231,7 +1254,7 @@
 </tr>
 <tr>
 <td>EC2 <code>t3.medium</code> (2 vCPU, 4 GiB)</td>
-<td>US$ 0,0416 /h</td>
+<td>US$ 0,0416 /h on-demand · ≈ US$ 0,0095–0,0114 /h Spot (15/11, us-east-2)</td>
 </tr>
 <tr>
 <td>EC2 <code>t4g.medium</code> (Graviton, 2 vCPU, 4 GiB)</td>
@@ -1288,7 +1311,10 @@
 </tbody>
 </table>
 <h2 id="2-estimativa-mensal">2. Estimativa mensal</h2>
-<h3 id="a-ambiente-do-projeto-como-os-scripts-criam">A — Ambiente do projeto (como os scripts criam)</h3>
+<h3 id="a-ambiente-atual-otimizado-como-os-scripts-criam-agora">A — Ambiente atual, otimizado (como os scripts criam agora)</h3>
+<p>Depois do primeiro deploy (cenário A0, abaixo), o ambiente foi reduzido ao mínimo que ainda
+cumpre o enunciado e aguenta o teste de carga: nós <strong>Spot</strong>, <strong>1 NAT Gateway</strong>, <strong>sem RDS</strong>
+(Postgres no cluster), <strong>1 Load Balancer</strong> e <strong>lifecycle no ECR</strong>.</p>
 <table>
 <thead>
 <tr>
@@ -1304,7 +1330,219 @@
 <td style="text-align: right;">73,00</td>
 </tr>
 <tr>
-<td>Nós EC2</td>
+<td>Nós EC2 <strong>Spot</strong> (2 × <code>t3.medium</code>; o node group aceita <code>t3a.medium</code>)</td>
+<td>2 × ≈ 0,01045 × 730</td>
+<td style="text-align: right;">15,26</td>
+</tr>
+<tr>
+<td>EBS dos nós</td>
+<td>2 × 20 GB × 0,08</td>
+<td style="text-align: right;">3,20</td>
+</tr>
+<tr>
+<td>NAT Gateway (1, compartilhado pelas 2 subnets privadas)</td>
+<td>0,045 × 730</td>
+<td style="text-align: right;">32,85</td>
+</tr>
+<tr>
+<td>NAT — dados</td>
+<td>20 GB × 0,045</td>
+<td style="text-align: right;">0,90</td>
+</tr>
+<tr>
+<td>IPv4 públicos</td>
+<td>3 (1 NAT + 2 ELB) × 0,005 × 730</td>
+<td style="text-align: right;">10,95</td>
+</tr>
+<tr>
+<td>Classic Load Balancer (o único)</td>
+<td>0,025 × 730 + 20 GB × 0,008</td>
+<td style="text-align: right;">18,41</td>
+</tr>
+<tr>
+<td>Postgres e Redis no cluster</td>
+<td>usam os nós</td>
+<td style="text-align: right;">0,00</td>
+</tr>
+<tr>
+<td>ECR (≈ 2,0 GB, com lifecycle)</td>
+<td>2,0 × 0,10</td>
+<td style="text-align: right;">0,20</td>
+</tr>
+<tr>
+<td>GitHub Actions + Pages</td>
+<td>repositórios públicos</td>
+<td style="text-align: right;">0,00</td>
+</tr>
+<tr>
+<td>Transferência para a internet</td>
+<td>&lt; 100 GB</td>
+<td style="text-align: right;">0,00</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td></td>
+<td style="text-align: right;"><strong>≈ 154,77</strong></td>
+</tr>
+<tr>
+<td><strong>Por hora</strong></td>
+<td></td>
+<td style="text-align: right;"><strong>≈ 0,21</strong></td>
+</tr>
+</tbody>
+</table>
+<p>O preço Spot muda com a oferta. Em 15/11/2026, às 22:47 UTC
+(<code>aws ec2 describe-spot-price-history</code>), estava em US$ 0,0095/h (us-east-2a) e US$ 0,0114/h
+(us-east-2b) para o <code>t3.medium</code>, contra US$ 0,0416/h on-demand, ou seja, <strong>75 % mais barato</strong>.</p>
+<pre class="mermaid"><code>pie showData title Cenário A (otimizado) — US$ 154,77/mês
+    "EKS control plane" : 73.00
+    "NAT Gateway (1)" : 33.75
+    "Load Balancer" : 18.41
+    "Nós EC2 Spot (2 x t3.medium)" : 15.26
+    "IPv4 públicos" : 10.95
+    "EBS + ECR" : 3.40</code></pre>
+<p>Agora o maior custo é o <strong>control plane do EKS</strong> (47 %), que é fixo: a única alavanca é o
+tempo ligado. Por isso o teardown automático de segurança caiu de 8 h para <strong>3 h</strong>.</p>
+<h3 id="otimizacoes-aplicadas">Otimizações aplicadas</h3>
+<p>Feitas em 15/11/2026, entre 22:40 e 23:00 UTC, com o cluster no ar.</p>
+<table>
+<thead>
+<tr>
+<th>Otimização</th>
+<th>Antes</th>
+<th>Depois</th>
+<th style="text-align: right;">Economia US$/h</th>
+<th style="text-align: right;">US$/mês</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Nós <strong>Spot</strong> (node group <code>eks-store-spot</code>, <code>t3.medium</code>/<code>t3a.medium</code>, mín. 1, máx. 2)</td>
+<td>2 × <code>t3.medium</code> on-demand (0,0832)</td>
+<td>2 × <code>t3.medium</code> Spot (0,0209)</td>
+<td style="text-align: right;">0,0623</td>
+<td style="text-align: right;">45,48</td>
+</tr>
+<tr>
+<td><strong>1 NAT Gateway</strong> para as 2 subnets privadas (template alterado; <code>aws cloudformation deploy</code> removeu NAT e EIP da AZ2)</td>
+<td>2 NAT + 2 IPv4 (0,1000)</td>
+<td>1 NAT + 1 IPv4 (0,0500)</td>
+<td style="text-align: right;">0,0500</td>
+<td style="text-align: right;">36,50</td>
+</tr>
+<tr>
+<td><strong>Sem RDS</strong>: Postgres no cluster (<code>k8s/postgres.yaml</code>)</td>
+<td><code>db.t4g.micro</code> + 20 GB gp3 (0,0192)</td>
+<td>0</td>
+<td style="text-align: right;">0,0192</td>
+<td style="text-align: right;">13,98</td>
+</tr>
+<tr>
+<td><strong>ECR com lifecycle</strong>: sem tag expira em 1 dia; ficam só as 3 últimas com tag. Imagem órfã apagada; <code>push-images.sh</code> passa a publicar só <code>amd64</code></td>
+<td>2,55 GB</td>
+<td>2,05 GB (≈ 1 GB nos próximos pushes)</td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">≈ 0,05–0,15</td>
+</tr>
+<tr>
+<td><strong>1 Load Balancer</strong> só (o Service <code>gateway</code>; o Ingress/ALB não é aplicado)</td>
+<td>1</td>
+<td>1</td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">—</td>
+</tr>
+<tr>
+<td>Teardown automático de segurança</td>
+<td>8 h</td>
+<td><strong>3 h</strong></td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">pior caso de US$ 3,25 para US$ 1,15</td>
+</tr>
+<tr>
+<td><code>eks-create.sh</code> cria o cluster com <code>--upgrade-policy supportType=STANDARD</code></td>
+<td>suporte estendido (US$ 0,60/h quando a versão sai do suporte padrão)</td>
+<td>upgrade automático</td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">evita +US$ 365/mês</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>0,342/h</strong></td>
+<td><strong>0,211/h</strong></td>
+<td style="text-align: right;"><strong>0,1315 (−38 %)</strong></td>
+<td style="text-align: right;"><strong>≈ 95,96</strong></td>
+</tr>
+</tbody>
+</table>
+<p>A troca foi feita com o cluster no ar: o node group Spot subiu ao lado do antigo, o EKS drenou
+os pods para ele, e o ELB seguiu respondendo 200. O smoke test pelo ELB deu os mesmos
+<strong>11/14</strong> de antes (as 3 falhas são do câmbio, por falta da API key da AwesomeAPI).</p>
+<p><strong>Avaliado e não aplicado:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Ideia</th>
+<th style="text-align: right;">Economia</th>
+<th>Por que não</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Nenhum NAT (nós nas subnets públicas, com IP público)</td>
+<td style="text-align: right;">−0,04/h</td>
+<td>o enunciado põe os pods em subnets <strong>privadas</strong>, e os nós ficariam expostos com IP público</td>
+</tr>
+<tr>
+<td>1 nó só</td>
+<td style="text-align: right;">−0,01/h</td>
+<td>o HPA do gateway não passaria de ~3 réplicas (falta memória: cada réplica pede 384 Mi). Fora da gravação dá para usar <code>desiredSize=1</code> (o mínimo do node group já é 1)</td>
+</tr>
+<tr>
+<td><code>t3.small</code> (2 GiB)</td>
+<td style="text-align: right;">−0,01/h</td>
+<td>4 JVMs × 384 Mi + Postgres já lotam 2 nós; o HPA ficaria <code>Pending</code></td>
+</tr>
+<tr>
+<td>Tirar o Load Balancer (NodePort/port-forward)</td>
+<td style="text-align: right;">−0,035/h</td>
+<td>o enunciado pede acesso público pelo LB</td>
+</tr>
+<tr>
+<td>Fargate no lugar dos nós</td>
+<td style="text-align: right;">—</td>
+<td>cobra por pod: ~15 pods × (0,25 vCPU + 0,5 GB) ≈ US$ 0,19/h, contra US$ 0,02/h dos 2 nós Spot</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition warning">
+<p class="admonition-title">O que o Spot e o Postgres no cluster custam em confiabilidade</p>
+<ul>
+<li><strong>Spot</strong>: a AWS pode retomar um nó com 2 min de aviso. O EKS drena o nó, e os pods sobem no
+  outro (ou no substituto que o node group cria). Com 2 tipos de instância e 2 AZs, o risco
+  de ficar sem capacidade é baixo. Para dev/teste e para o vídeo, é aceitável.</li>
+<li><strong>Postgres no cluster</strong> (Deployment sem volume persistente): se o pod for recriado, os dados
+  somem, e o <code>account</code> precisa reiniciar para o Flyway recriar o schema. Em produção, o
+  cenário C usa RDS Multi-AZ (<code>aws/rds-create.sh</code> continua no repositório e foi validado no
+  primeiro deploy: Flyway migrou, smoke test 11/14).</li>
+</ul>
+</div>
+<h3 id="a0-primeiro-deploy-antes-da-otimizacao">A0 — Primeiro deploy (antes da otimização)</h3>
+<table>
+<thead>
+<tr>
+<th>Componente</th>
+<th>Cálculo</th>
+<th style="text-align: right;">US$/mês</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EKS control plane</td>
+<td>0,10 × 730</td>
+<td style="text-align: right;">73,00</td>
+</tr>
+<tr>
+<td>Nós EC2 on-demand</td>
 <td>2 × 0,0416 × 730</td>
 <td style="text-align: right;">60,74</td>
 </tr>
@@ -1314,7 +1552,7 @@
 <td style="text-align: right;">3,20</td>
 </tr>
 <tr>
-<td>NAT Gateways (template: 1 por AZ)</td>
+<td>NAT Gateways (template original: 1 por AZ)</td>
 <td>2 × 0,045 × 730</td>
 <td style="text-align: right;">65,70</td>
 </tr>
@@ -1339,162 +1577,80 @@
 <td style="text-align: right;">13,98</td>
 </tr>
 <tr>
-<td>Redis no cluster</td>
-<td>usa os nós</td>
-<td style="text-align: right;">0,00</td>
-</tr>
-<tr>
-<td>ECR (4 imagens <code>amd64</code> + <code>arm64</code>, ≈ 1,4 GB)</td>
+<td>ECR (<code>amd64</code> + <code>arm64</code>, ≈ 1,4 GB estimados)</td>
 <td>1,4 × 0,10</td>
 <td style="text-align: right;">0,14</td>
 </tr>
 <tr>
-<td>GitHub Actions + Pages</td>
-<td>repositórios públicos</td>
-<td style="text-align: right;">0,00</td>
-</tr>
-<tr>
-<td>Transferência para a internet</td>
-<td>&lt; 100 GB</td>
-<td style="text-align: right;">0,00</td>
-</tr>
-<tr>
 <td><strong>Total</strong></td>
 <td></td>
-<td style="text-align: right;"><strong>≈ 250,67</strong></td>
-</tr>
-<tr>
-<td><strong>Por hora</strong></td>
-<td>250,67 ÷ 730</td>
-<td style="text-align: right;"><strong>≈ 0,34</strong></td>
+<td style="text-align: right;"><strong>≈ 250,67</strong> (≈ 0,34/h)</td>
 </tr>
 </tbody>
 </table>
-<pre class="mermaid"><code>pie showData title Cenário A — US$ 250,67/mês
-    "EKS control plane" : 73.00
-    "NAT Gateways (2)" : 66.60
-    "Nós EC2 (2 x t3.medium)" : 60.74
-    "Load Balancer" : 18.41
-    "IPv4 públicos" : 14.60
-    "RDS" : 13.98
-    "EBS + ECR" : 3.34</code></pre>
-<div class="admonition info">
-<p class="admonition-title">Custo da entrega</p>
-<p>O projeto não precisa do cluster ligado o mês inteiro: uma sessão de <strong>3 h</strong> (criar, implantar,
-gravar o teste de carga, destruir) custa <strong>≈ 3 × 0,34 ≈ US$ 1,03</strong>. O maior risco financeiro é
-<strong>esquecer o cluster ligado</strong> (≈ US$ 8,20 por dia) — por isso o <code>eks-teardown.sh</code>, o
-teardown automático de segurança (8 h) e o alerta do AWS Budgets no Runbook.</p>
-</div>
 <h3 id="custo-real-do-deploy-de-15112026">Custo real do deploy de 15/11/2026</h3>
-<p>Recursos criados (UTC): NAT Gateways 21:29, cluster 21:31, nós 21:39, RDS 21:43, ELB 21:48.
-Com tudo ligado, o custo por hora é:</p>
+<p>Linha do tempo (UTC), conferida com a AWS CLI:</p>
 <table>
 <thead>
 <tr>
-<th>Item</th>
+<th>Período</th>
+<th>Configuração</th>
 <th style="text-align: right;">US$/h</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>EKS control plane</td>
-<td style="text-align: right;">0,1000</td>
-</tr>
-<tr>
-<td>2 NAT Gateways</td>
-<td style="text-align: right;">0,0900</td>
-</tr>
-<tr>
-<td>2 × <code>t3.medium</code></td>
-<td style="text-align: right;">0,0832</td>
-</tr>
-<tr>
-<td>Classic Load Balancer</td>
-<td style="text-align: right;">0,0250</td>
-</tr>
-<tr>
-<td>4 IPv4 públicos (2 NAT + 2 do ELB, conferidos com <code>aws ec2 describe-network-interfaces</code>)</td>
-<td style="text-align: right;">0,0200</td>
-</tr>
-<tr>
-<td>RDS <code>db.t4g.micro</code> + 20 GB gp3</td>
-<td style="text-align: right;">0,0192</td>
-</tr>
-<tr>
-<td>EBS 2 × 20 GB gp3</td>
-<td style="text-align: right;">0,0044</td>
-</tr>
-<tr>
-<td><strong>Total</strong></td>
-<td style="text-align: right;"><strong>≈ 0,342</strong></td>
-</tr>
-</tbody>
-</table>
-<table>
-<thead>
-<tr>
-<th>Cenário</th>
 <th style="text-align: right;">Horas</th>
 <th style="text-align: right;">Custo</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Criar, implantar, smoke test e teste de carga (21:29 → 22:30)</td>
-<td style="text-align: right;">≈ 1</td>
-<td style="text-align: right;">≈ US$ 0,34</td>
+<td>21:29 → 22:47</td>
+<td>A0: 2 NAT, 2 × <code>t3.medium</code> on-demand, RDS</td>
+<td style="text-align: right;">0,342</td>
+<td style="text-align: right;">1,3</td>
+<td style="text-align: right;">≈ 0,44</td>
 </tr>
 <tr>
-<td>Até a gravação do vídeo do HPA e o teardown manual (estimado)</td>
-<td style="text-align: right;">≈ 4</td>
-<td style="text-align: right;">≈ US$ 1,40</td>
+<td>22:47 → 23:00</td>
+<td>troca: Spot sobe, NAT2 sai às 22:49, nós on-demand saem às 22:55, RDS às 23:00</td>
+<td style="text-align: right;">≈ 0,30</td>
+<td style="text-align: right;">0,2</td>
+<td style="text-align: right;">≈ 0,07</td>
 </tr>
 <tr>
-<td>Pior caso: ninguém destrói e o teardown automático roda após 8 h</td>
-<td style="text-align: right;">≈ 9,5</td>
-<td style="text-align: right;">≈ US$ 3,25</td>
+<td>23:00 → 01:43 (16/11)</td>
+<td>A otimizado, até o teardown automático (pior caso)</td>
+<td style="text-align: right;">0,211</td>
+<td style="text-align: right;">2,7</td>
+<td style="text-align: right;">≈ 0,58</td>
+</tr>
+<tr>
+<td>01:43 → ~02:05</td>
+<td>teardown (recursos sendo apagados)</td>
+<td style="text-align: right;">≈ 0,15</td>
+<td style="text-align: right;">0,4</td>
+<td style="text-align: right;">≈ 0,05</td>
+</tr>
+<tr>
+<td><strong>Total (pior caso)</strong></td>
+<td></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"><strong>≈ 4,6</strong></td>
+<td style="text-align: right;"><strong>≈ US$ 1,15</strong></td>
 </tr>
 </tbody>
 </table>
-<p>Some a isso centavos de NAT por GB (pull das imagens do ECR pelos nós, ≈ 1,5 GB × 0,045) e de
-CPU acima do baseline dos <code>t3</code> (modo <em>unlimited</em>).</p>
-<p><strong>Cost Explorer</strong>: está habilitado na conta e mostrava <strong>US$ 0,00</strong> de 01/11 a 15/11 (nenhum
-recurso antes desta sessão). A AWS publica os custos com ~24 h de atraso, então o valor desta
-sessão aparece a partir de 16–17/11:</p>
+<p>Antes da otimização, o pior caso (tudo ligado até o teardown de 8 h) era <strong>≈ US$ 3,25</strong>. Se o
+cluster for destruído logo depois da gravação, o total fica abaixo de US$ 1. Some centavos de
+NAT por GB (pull das imagens, ≈ 2 GB × 0,045) e as chamadas ao Cost Explorer (US$ 0,01 cada).</p>
+<p><strong>Cost Explorer</strong>: está habilitado na conta e mostrava <strong>US$ 0,00</strong> de 01/11 a 15/11 (consultado
+às 23:05 UTC de 15/11; nenhum recurso existia antes desta sessão). A AWS publica os custos com
+~24 h de atraso, então o valor desta sessão aparece a partir de 16–17/11:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>aws<span class="w"> </span>ce<span class="w"> </span>get-cost-and-usage<span class="w"> </span>--time-period<span class="w"> </span><span class="nv">Start</span><span class="o">=</span><span class="m">2026</span>-11-15,End<span class="o">=</span><span class="m">2026</span>-11-18<span class="w"> </span>--granularity<span class="w"> </span>DAILY<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span>--metrics<span class="w"> </span>UnblendedCost<span class="w"> </span>--group-by<span class="w"> </span><span class="nv">Type</span><span class="o">=</span>DIMENSION,Key<span class="o">=</span>SERVICE<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span>--query<span class="w"> </span><span class="s1">'ResultsByTime[].[TimePeriod.Start, Groups[].[Keys[0], Metrics.UnblendedCost.Amount]]'</span>
 </code></pre></div>
-<h3 id="b-otimizado-mesma-arquitetura-mais-barato">B — Otimizado (mesma arquitetura, mais barato)</h3>
-<table>
-<thead>
-<tr>
-<th>Mudança</th>
-<th>Efeito</th>
-<th style="text-align: right;">US$/mês</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1 NAT Gateway compartilhado (em vez de 1 por AZ)</td>
-<td>−1 NAT, −1 IPv4</td>
-<td style="text-align: right;">−36,50</td>
-</tr>
-<tr>
-<td>Nós Graviton <code>t4g.medium</code> (as imagens já são <code>arm64</code> + <code>amd64</code>)</td>
-<td>−19 % por nó</td>
-<td style="text-align: right;">−11,68</td>
-</tr>
-<tr>
-<td><strong>Total</strong> (a partir do A, com RDS e ECR)</td>
-<td></td>
-<td style="text-align: right;"><strong>≈ 202,49</strong></td>
-</tr>
-</tbody>
-</table>
-<p>Outras alavancas: nós <strong>Spot</strong> (até ~70 % mais baratos, aceitável para dev/teste — o HPA e os
-múltiplos nós toleram a perda de uma instância), <strong>Savings Plans</strong> de 1 ano (~30–40 % em EC2) e
-<strong>desligar fora do horário</strong> (<code>desiredSize=0</code> no node group).</p>
+<p>Outras alavancas para um ambiente que fique ligado: <strong>Savings Plans</strong> de 1 ano (~30–40 % em
+EC2), nós <strong>Graviton</strong> (<code>t4g.medium</code> Spot, com <code>PLATFORMS=linux/arm64</code> no <code>push-images.sh</code>) e
+<strong>desligar fora do horário</strong> (<code>desiredSize=0</code> no node group; o control plane continua cobrando).</p>
 <h3 id="c-producao-pequena-com-alta-disponibilidade">C — Produção pequena com alta disponibilidade</h3>
 <table>
 <thead>
@@ -1562,18 +1718,21 @@ múltiplos nós toleram a perda de uma instância), <strong>Savings Plans</stron
 </tr>
 </tbody>
 </table>
+<p>Em produção, voltam os 2 NAT (um por AZ) e o RDS Multi-AZ, e os nós passam a ser on-demand:
+o que o cenário A economiza aqui, ele paga em disponibilidade.</p>
 <h3 id="aws-pricing-calculator">AWS Pricing Calculator</h3>
 <p>Para reproduzir (e gerar o link compartilhável) em <a href="https://calculator.aws/#/">https://calculator.aws/#/</a>, região
 <em>US East (Ohio)</em>, crie um grupo <strong>"Store — cenário A"</strong> com:</p>
 <ol>
 <li><strong>Amazon EKS</strong> — 1 cluster, 730 h.</li>
-<li><strong>Amazon EC2</strong> — 2 instâncias <code>t3.medium</code>, Linux, On-Demand, 100 % de uso; EBS gp3 20 GB cada.</li>
-<li><strong>Amazon VPC</strong> — NAT Gateway: 2, 20 GB processados; <em>Public IPv4 addresses</em>: 4 em uso.</li>
+<li><strong>Amazon EC2</strong> — 2 instâncias <code>t3.medium</code>, Linux, <strong>Spot</strong> (a calculadora usa o preço Spot
+   médio histórico), 100 % de uso; EBS gp3 20 GB cada.</li>
+<li><strong>Amazon VPC</strong> — NAT Gateway: 1, 20 GB processados; <em>Public IPv4 addresses</em>: 3 em uso.</li>
 <li><strong>Elastic Load Balancing</strong> — Classic Load Balancer: 1, 20 GB processados.</li>
-<li><strong>Amazon RDS for PostgreSQL</strong> — <code>db.t4g.micro</code>, Single-AZ, On-Demand, 20 GB gp3.</li>
-<li><strong>Amazon ECR</strong> — 1,4 GB armazenados.</li>
+<li><strong>Amazon ECR</strong> — 2 GB armazenados.</li>
 </ol>
-<p>O total deve bater com a tabela A (≈ US$ 250,67/mês).
+<p>O total deve ficar perto da tabela A (≈ US$ 155/mês; o Spot da calculadora varia um pouco).
+Para o cenário C, acrescente o RDS for PostgreSQL (<code>db.t4g.small</code>, Multi-AZ, 50 GB gp3).
 <strong>Link da estimativa:</strong> <em>a gerar no calculator e colar aqui</em>.</p>
 <h2 id="3-ecr-docker-hub">3. ECR × Docker Hub</h2>
 <table>
@@ -1587,7 +1746,7 @@ múltiplos nós toleram a perda de uma instância), <strong>Savings Plans</stron
 <tbody>
 <tr>
 <td>Custo</td>
-<td>US$ 0,10/GB-mês (≈ US$ 0,14 aqui); pull na mesma região grátis</td>
+<td>US$ 0,10/GB-mês (≈ US$ 0,20 aqui, limitado pela lifecycle policy); pull na mesma região grátis</td>
 <td>grátis (repositórios públicos)</td>
 </tr>
 <tr>
@@ -1669,7 +1828,7 @@ no cluster. O custo é de centavos. O Docker Hub (padrão do hands-on 4) continu
 <tr>
 <td><strong>Amazon RDS</strong></td>
 <td>PaaS (DBaaS)</td>
-<td>PostgreSQL 17 gerenciado em subnet privada</td>
+<td>PostgreSQL 17 em subnet privada no primeiro deploy (validado e depois removido para cortar custo; volta no cenário C)</td>
 <td>patches, backups, failover Multi-AZ, storage</td>
 </tr>
 <tr>
@@ -1760,7 +1919,7 @@ $$</p>
 </thead>
 <tbody>
 <tr>
-<td>A + RDS Single-AZ</td>
+<td>A0 (RDS Single-AZ)</td>
 <td>0,9999 × 0,9995 × 0,9999 × 0,995</td>
 <td style="text-align: right;"><strong>99,43 %</strong></td>
 <td style="text-align: right;">≈ 4 h 10 min</td>
@@ -1772,8 +1931,8 @@ $$</p>
 <td style="text-align: right;">≈ 53 min</td>
 </tr>
 <tr>
-<td>A com Postgres no cluster (1 pod, sem volume)</td>
-<td>sem SLA — 1 pod é ponto único de falha e perde dados</td>
+<td>A (atual: Postgres no cluster, 1 pod sem volume, nós Spot)</td>
+<td>sem SLA — 1 pod é ponto único de falha e perde dados; o Spot pode retomar um nó</td>
 <td style="text-align: right;">—</td>
 <td style="text-align: right;">—</td>
 </tr>
@@ -1818,8 +1977,9 @@ $$</p>
 </table>
 <p>O SLA é mais folgado que o SLO de propósito: o SLO dispara a reação (congelar deploys, priorizar
 confiabilidade) <strong>antes</strong> de o contrato ser quebrado — como na aula <em>SLI/SLO/SLA</em>. O SLO de
-99,5 % também é compatível com o cenário A + RDS Single-AZ (99,43 % de piso teórico só seria um
-problema em um mês com falha longa do banco); para garantir 99,5 % com folga, use o cenário C.</p>
+99,5 % também é compatível com o cenário A0 + RDS Single-AZ (99,43 % de piso teórico só seria um
+problema em um mês com falha longa do banco). O cenário A atual é de dev/teste e não promete
+SLA. Para garantir 99,5 % com folga, use o cenário C.</p>
 <p>SLIs medidos com as métricas que o projeto já exporta para o Prometheus:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># disponibilidade (30 dias)</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="mi">1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="k">sum</span><span class="o">(</span><span class="kr">rate</span><span class="o">(</span><span class="nv">http_server_requests_seconds_count</span><span class="p">{</span><span class="nl">job</span><span class="o">=</span><span class="p">"</span><span class="s">GatewayMetrics</span><span class="p">",</span><span class="nl">status</span><span class="o">=~</span><span class="p">"</span><span class="s">5..</span><span class="p">"}[</span><span class="s">30d</span><span class="p">]</span><span class="o">))</span>

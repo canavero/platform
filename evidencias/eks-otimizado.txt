@@ -1,0 +1,115 @@
+# Ambiente EKS otimizado para custo — 15/11/2026 (us-east-2). Conta mascarada como <ACCOUNT_ID>.
+
+$ aws eks describe-nodegroup --cluster-name eks-store --nodegroup-name eks-store-spot --query ...
+{
+    "status": "ACTIVE",
+    "capacityType": "SPOT",
+    "instanceTypes": [
+        "t3.medium",
+        "t3a.medium"
+    ],
+    "scaling": {
+        "minSize": 1,
+        "maxSize": 2,
+        "desiredSize": 2
+    },
+    "diskSize": 20
+}
+
+$ aws eks list-nodegroups --cluster-name eks-store
+NODEGROUPS	eks-store-spot
+
+$ kubectl get nodes -L eks.amazonaws.com/capacityType,node.kubernetes.io/instance-type,topology.kubernetes.io/zone
+NAME                                            STATUS   ROLES    AGE   VERSION               CAPACITYTYPE   INSTANCE-TYPE   ZONE
+ip-192-168-184-146.us-east-2.compute.internal   Ready    <none>   19m   v1.37.1-eks-9adbfea   SPOT           t3.medium       us-east-2a
+ip-192-168-216-79.us-east-2.compute.internal    Ready    <none>   19m   v1.37.1-eks-9adbfea   SPOT           t3.medium       us-east-2b
+
+$ aws ec2 describe-instances (running) --query [InstanceType, InstanceLifecycle, AZ]
+t3.medium	spot	us-east-2a
+t3.medium	spot	us-east-2b
+
+$ aws ec2 describe-nat-gateways --filter Name=state,Values=available --query "length(NatGateways)"
+1
+$ aws ec2 describe-addresses --query "length(Addresses)"   # Elastic IPs
+1
+$ aws ec2 describe-route-tables (rota 0.0.0.0/0 das subnets privadas)
+Private Subnet AZ1	nat-<id>
+Private Subnet AZ2	nat-<id>
+
+$ aws rds describe-db-instances --query "length(DBInstances)"
+0
+$ aws rds describe-db-snapshots --query "length(DBSnapshots)"
+0
+
+$ aws elb describe-load-balancers + aws elbv2 describe-load-balancers  # quantidade
+classic: 1, alb/nlb: 0
+
+$ aws ecr get-lifecycle-policy + describe-images (por repositório)
+account-service   imagens=5 bytes=565154191 lifecycle=untagged:sinceImagePushed=1;tagged:imageCountMoreThan=3
+auth-service      imagens=5 bytes=469790310 lifecycle=untagged:sinceImagePushed=1;tagged:imageCountMoreThan=3
+exchange-service  imagens=5 bytes=497786998 lifecycle=untagged:sinceImagePushed=1;tagged:imageCountMoreThan=3
+gateway-service   imagens=5 bytes=517633684 lifecycle=untagged:sinceImagePushed=1;tagged:imageCountMoreThan=3
+
+$ aws ec2 describe-spot-price-history --instance-types t3.medium t3a.medium (22:47 UTC)
+t3.medium	us-east-2a	0.009500
+t3.medium	us-east-2b	0.011400
+t3.medium	us-east-2c	0.011100
+t3a.medium	us-east-2a	0.010600
+t3a.medium	us-east-2b	0.009000
+t3a.medium	us-east-2c	0.008900
+
+$ varredura de todas as regiões (EC2, NAT, EKS, RDS, ELB, EIP, volumes soltos): só us-east-2 tem recursos
+
+$ ./scripts/smoke-test.sh http://<ELB>   # depois da otimização: Postgres no cluster, nós Spot
+✅ GET /health-check (aberto) -> 200
+✅ GET /info (aberto) -> 200
+✅ POST /auth/register -> 200
+✅ POST /auth/register (email repetido) -> 409
+✅ POST /auth/login (senha errada) -> 401
+✅ POST /auth/login devolve cookie JWT -> yes
+✅ GET /accounts sem cookie -> 401
+✅ GET /accounts com token forjado -> 401
+✅ GET /auth/me -> smoke.1794784484@insper.edu.br
+✅ GET /accounts/{id} (1ª vez: banco) -> 200
+✅ GET /accounts/{id} (2ª vez: cache Redis) -> 200
+   exchange: {"timestamp":"2026-11-15T23:14:55.725Z","status":503,"error":"Service Unavailable","path":"/exchanges/USD/BRL"}
+❌ GET /exchanges/USD/BRL tem sell/buy -> esperado yes, obtido no
+❌ id-account vem do token (header forjado descartado) -> esperado 2810be57-4960-4f6e-87a8-b4784f983bf7, obtido null
+❌ GET /exchanges/XXX/YYY (par inválido) -> esperado 404, obtido 503
+SMOKE TEST FALHOU
+
+# HPA do gateway nos 2 nós Spot (busybox do enunciado, 4 workers; amostras a cada ~13 s)
+# 1º teste, logo após o redeploy: os HPAs de account/auth/exchange ainda estavam em 3/2/3 pelo pico
+# de CPU da JVM no start (5 pods × 384 Mi a mais), então 2 réplicas do gateway ficaram Pending por memória:
+  11s  cpu: 3%/50% 1 10 replicas=2  pods= 2 Running 
+  24s  cpu: 44%/50% 1 10 replicas=2  pods= 2 Running 
+  38s  cpu: 132%/50% 1 10 replicas=2  pods= 4 Running 
+  51s  cpu: 186%/50% 1 10 replicas=4  pods= 2 Pending  6 Running 
+  64s  cpu: 48%/50% 1 10 replicas=8  pods= 2 Pending  6 Running 
+  77s  cpu: 48%/50% 1 10 replicas=8  pods= 2 Pending  6 Running 
+  91s  cpu: 52%/50% 1 10 replicas=8  pods= 2 Pending  6 Running 
+ 105s  cpu: 81%/50% 1 10 replicas=8  pods= 2 Pending  6 Running 
+ 118s  cpu: 49%/50% 1 10 replicas=8  pods= 2 Pending  6 Running 
+ 132s  cpu: 73%/50% 1 10 replicas=8  pods= 2 Pending  6 Running 
+ 145s  cpu: 51%/50% 1 10 replicas=8  pods= 2 Pending  6 Running 
+ 159s  cpu: 42%/50% 1 10 replicas=8  pods= 2 Pending  6 Running 
+ 173s  cpu: 39%/50% 1 10 replicas=8  pods= 2 Pending  6 Running 
+ 187s  cpu: 30%/50% 1 10 replicas=8  pods= 2 Pending  6 Running 
+ 200s  cpu: 27%/50% 1 10 replicas=8  pods= 2 Pending  6 Running 
+
+# 2º teste, com account/auth/exchange de volta a 1 (a carga do busybox saiu mais fraca e o HPA parou em 6):
+  10s  cpu: 1%/50% replicas=1  pods:  1 Running 
+  24s  cpu: 41%/50% replicas=1  pods:  1 Running 
+  38s  cpu: 41%/50% replicas=1  pods:  1 Running 
+  52s  cpu: 41%/50% replicas=1  pods:  1 ContainerCreating  1 Running 
+  65s  cpu: 77%/50% replicas=1  pods:  2 Running 
+  79s  cpu: 76%/50% replicas=2  pods:  2 Running 
+  94s  cpu: 41%/50% replicas=2  pods:  2 Running 
+ 107s  cpu: 38%/50% replicas=2  pods:  2 Running 
+ 121s  cpu: 135%/50% replicas=2  pods:  4 Running 
+ 136s  cpu: 71%/50% replicas=4  pods:  6 Running 
+ 150s  cpu: 67%/50% replicas=6  pods:  6 Running 
+ 164s  cpu: 22%/50% replicas=6  pods:  6 Running 
+
+# Capacidade: kubectl scale deployment gateway --replicas=10 -> 10/10 Running em 30 s
+#   requests de memória dos nós: 2638Mi (80 %) e 3014Mi (91 %) dos 3294Mi alocáveis de cada t3.medium

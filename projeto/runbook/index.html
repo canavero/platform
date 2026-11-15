@@ -666,10 +666,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-banco-gerenciado-amazon-rds" class="md-nav__link">
+  <a href="#4-opcional-banco-gerenciado-amazon-rds" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Banco gerenciado — Amazon RDS
+        4. (Opcional) Banco gerenciado — Amazon RDS
       
     </span>
   </a>
@@ -1006,10 +1006,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-banco-gerenciado-amazon-rds" class="md-nav__link">
+  <a href="#4-opcional-banco-gerenciado-amazon-rds" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Banco gerenciado — Amazon RDS
+        4. (Opcional) Banco gerenciado — Amazon RDS
       
     </span>
   </a>
@@ -1162,12 +1162,14 @@
 <p>Roteiro executável para subir a plataforma <strong>Store</strong> na AWS, gravar o teste de carga e
 <strong>desligar tudo</strong>. Os scripts seguem a ordem do enunciado (páginas <em>AWS</em> e <em>EKS</em>):
 VPC via CloudFormation (template <code>amazon-eks-vpc-private-subnets.yaml</code>) → role do cluster →
-cluster EKS → role do node group → node group só nas subnets privadas → kubeconfig.</p>
+cluster EKS → role do node group → node group só nas subnets privadas → kubeconfig. Tudo no
+tamanho mínimo que ainda aguenta o teste de carga (nós Spot, 1 NAT, Postgres no cluster).</p>
 <div class="admonition danger">
 <p class="admonition-title">Isto custa dinheiro</p>
-<p>Com 2 nós <code>t3.medium</code>, 2 NAT Gateways (do template), 1 Load Balancer e o RDS <code>db.t4g.micro</code>,
-o ambiente custa <strong>≈ US$ 0,34/hora (≈ US$ 8,20/dia)</strong> enquanto existir — mesmo parado.
-Planeje uma sessão de ~2–3 h (≈ US$ 1) e rode o <strong>passo 9 (teardown)</strong> no final.
+<p>Com 2 nós <code>t3.medium</code> <strong>Spot</strong>, 1 NAT Gateway, 1 Load Balancer e o Postgres no cluster, o
+ambiente custa <strong>≈ US$ 0,21/hora (≈ US$ 5/dia)</strong> enquanto existir, mesmo parado (o primeiro
+deploy, com 2 NAT, nós on-demand e RDS, custava US$ 0,34/h). Planeje uma sessão de ~2–3 h
+(&lt; US$ 1), agende o teardown de segurança (3 h) e rode o <strong>passo 9 (teardown)</strong> no final.
 Detalhes na análise de custos (<code>docs/projeto/custos.md</code>).</p>
 </div>
 <table>
@@ -1206,7 +1208,7 @@ Detalhes na análise de custos (<code>docs/projeto/custos.md</code>).</p>
 </tr>
 <tr>
 <td style="text-align: right;">4</td>
-<td><code>./aws/rds-create.sh</code> (PostgreSQL no RDS)</td>
+<td>(opcional) <code>./aws/rds-create.sh</code> (PostgreSQL no RDS; o padrão é o Postgres no cluster)</td>
 <td style="text-align: right;">10 min</td>
 <td>+ US$ 0,02/h</td>
 </tr>
@@ -1294,19 +1296,22 @@ descobrem a conta em tempo de execução (<code>aws sts get-caller-identity</cod
 <p>Alternativa Docker Hub: <code>docker login &amp;&amp; DOCKERHUB_USERNAME=&lt;usuario&gt; ./scripts/push-images.sh</code>
 (e o mesmo <code>DOCKERHUB_USERNAME</code> no passo 5). Pelo CI: passo 7.</p>
 <h2 id="3-criar-vpc-cluster-eks-node-group">3. Criar VPC + cluster EKS + node group</h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>./aws/eks-create.sh<span class="w">            </span><span class="c1"># padrão: us-east-2, cluster eks-store, 2 x t3.medium</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="c1"># variáveis: AWS_REGION, CLUSTER, NODE_TYPE (ex.: t4g.medium), NODES</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>./aws/eks-create.sh<span class="w">            </span><span class="c1"># padrão: us-east-2, cluster eks-store, 2 x t3.medium Spot</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="c1"># variáveis: AWS_REGION, CLUSTER, NODE_TYPES (padrão "t3.medium t3a.medium"), NODES</span>
 </code></pre></div>
 <p>O script é idempotente (pode ser rodado de novo se cair no meio) e faz:</p>
 <ol>
 <li><code>aws cloudformation deploy</code> do template do enunciado → VPC <code>192.168.0.0/16</code>, 2 subnets
    públicas (load balancers, tag <code>kubernetes.io/role/elb</code>) e 2 privadas (pods, tag
-   <code>kubernetes.io/role/internal-elb</code>) em duas AZs, 1 NAT Gateway por AZ;</li>
+   <code>kubernetes.io/role/internal-elb</code>) em duas AZs e <strong>1 NAT Gateway</strong> compartilhado (o template
+   original cria 1 por AZ; o único ajuste foi esse, que economiza US$ 0,05/h);</li>
 <li>role <code>eksClusterRole</code> com <code>AmazonEKSClusterPolicy</code>;</li>
-<li><code>aws eks create-cluster</code> (endpoint público, autenticação por <em>access entries</em>) e espera ficar <code>ACTIVE</code>;</li>
+<li><code>aws eks create-cluster</code> (endpoint público, autenticação por <em>access entries</em>, upgrade
+   policy <code>STANDARD</code> para nunca cair no suporte estendido, que custa US$ 0,60/h) e espera ficar <code>ACTIVE</code>;</li>
 <li>role <code>eksNodeRole</code> com <code>AmazonEKS_CNI_Policy</code>, <code>AmazonEKSWorkerNodePolicy</code>,
    <code>AmazonEC2ContainerRegistryReadOnly</code> (as três do enunciado);</li>
-<li>node group gerenciado <strong>só nas subnets privadas</strong>;</li>
+<li>node group gerenciado <strong>Spot</strong> (<code>t3.medium</code> ou <code>t3a.medium</code>, mín. 1, máx. 2; ~75 % mais
+   barato que on-demand) <strong>só nas subnets privadas</strong>;</li>
 <li><code>aws eks update-kubeconfig --name eks-store</code> + <strong>metrics-server</strong> (o HPA depende dele).</li>
 </ol>
 <p>Conferência:</p>
@@ -1314,18 +1319,20 @@ descobrem a conta em tempo de execução (<code>aws sts get-caller-identity</cod
 <a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>nodes<span class="w"> </span>-o<span class="w"> </span>wide<span class="w">          </span><span class="c1"># 2 nós Ready, IPs 192.168.128.x / 192.168.192.x (privados)</span>
 <a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>kubectl<span class="w"> </span>top<span class="w"> </span>nodes<span class="w">                  </span><span class="c1"># metrics-server ok (leva ~1 min)</span>
 </code></pre></div>
-<h2 id="4-banco-gerenciado-amazon-rds">4. Banco gerenciado — Amazon RDS</h2>
-<p>A página <em>EKS</em> do enunciado pede o banco no <strong>Amazon RDS ou DynamoDB</strong>; o mais barato que cumpre é
-o RDS PostgreSQL <code>db.t4g.micro</code> (≈ US$ 0,016/h). O Postgres <strong>dentro do cluster</strong>
-(<code>k8s/postgres.yaml</code>) fica só para kind/minikube.</p>
+<h2 id="4-opcional-banco-gerenciado-amazon-rds">4. (Opcional) Banco gerenciado — Amazon RDS</h2>
+<p>A página <em>EKS</em> do enunciado sugere <strong>Amazon RDS ou DynamoDB</strong>. O RDS PostgreSQL <code>db.t4g.micro</code>
+(≈ US$ 0,019/h com o disco) foi usado e validado no primeiro deploy. Para dev/teste e para o
+vídeo, o padrão agora é o Postgres <strong>dentro do cluster</strong> (<code>k8s/postgres.yaml</code>, sem custo extra e
+sem persistência). Pule este passo, a menos que precise de um banco que sobreviva ao pod:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">DATABASE_PASSWORD</span><span class="o">=</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-hex<span class="w"> </span><span class="m">16</span><span class="k">)</span><span class="w">   </span><span class="c1"># só no shell; nunca em arquivo versionado</span>
 <a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>./aws/rds-create.sh<span class="w">                                </span><span class="c1"># imprime o DATABASE_HOST a usar no passo 5</span>
 </code></pre></div>
 <p>Cria <code>db.t4g.micro</code> PostgreSQL 17, 20 GB gp3, Single-AZ, <strong>sem IP público</strong>, nas subnets privadas,
 com security group liberando a porta 5432 só para os nós do EKS.</p>
 <h2 id="5-implantar-a-plataforma">5. Implantar a plataforma</h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nv">DATABASE_HOST</span><span class="o">=</span>&lt;endpoint<span class="w"> </span><span class="k">do</span><span class="w"> </span>passo<span class="w"> </span><span class="m">4</span>&gt;<span class="w"> </span>./k8s/deploy.sh<span class="w">   </span><span class="c1"># usa o $DATABASE_PASSWORD exportado no passo 4</span>
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="c1"># imagens no Docker Hub: DOCKERHUB_USERNAME=&lt;usuario&gt; ...; sem RDS (kind): omita DATABASE_HOST</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>./k8s/deploy.sh<span class="w">                                       </span><span class="c1"># Postgres no cluster (padrão)</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="c1"># com RDS: DATABASE_HOST=&lt;endpoint do passo 4&gt; ./k8s/deploy.sh  (usa o $DATABASE_PASSWORD do passo 4)</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="c1"># imagens no Docker Hub: DOCKERHUB_USERNAME=&lt;usuario&gt; ./k8s/deploy.sh</span>
 </code></pre></div>
 <p>O script troca o prefixo <code>DOCKERHUB_USER</code> dos manifests pelo registry do ECR da conta (descoberto
 na hora), aplica <code>k8s/redis.yaml</code>, <code>k8s/postgres.yaml</code> (só sem RDS) e o
@@ -1387,13 +1394,14 @@ busybox do enunciado) e a alternativa com k6.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>./aws/eks-teardown.sh
 </code></pre></div>
 <p>Remove, nesta ordem: Service <code>LoadBalancer</code>/Ingress (libera o ELB) → RDS (se houver) →
-node group → cluster → stack da VPC (subnets, NAT Gateways, Elastic IPs) → repositórios do ECR.
+node groups → cluster → stack da VPC (subnets, NAT Gateway, Elastic IP) → repositórios do ECR.
 As roles IAM ficam (não custam nada). Antes de começar, o script aponta o <code>kubectl</code> para o
 <code>eks-store</code> (<code>aws eks update-kubeconfig</code>), para não apagar nada de outro cluster.</p>
 <p><strong>Teardown de segurança</strong> (caso alguém esqueça o cluster ligado): agende ao terminar o deploy,
-na pasta do repositório. Em 8 h ele roda o <code>eks-teardown.sh</code>, a menos que exista <code>~/KEEP_EKS</code>.</p>
+na pasta do repositório. Em <strong>3 h</strong> ele roda o <code>eks-teardown.sh</code>, a menos que exista <code>~/KEEP_EKS</code>
+(3 h bastam para implantar, testar e gravar; cada hora a mais custa US$ 0,21).</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>perl<span class="w"> </span>-MPOSIX<span class="w"> </span>-e<span class="w"> </span><span class="s1">'POSIX::setsid(); exec @ARGV'</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">  </span>nohup<span class="w"> </span>caffeinate<span class="w"> </span>-i<span class="w"> </span>sh<span class="w"> </span>-c<span class="w"> </span><span class="s1">'sleep 28800; [ -f ~/KEEP_EKS ] || ./aws/eks-teardown.sh'</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">  </span>nohup<span class="w"> </span>caffeinate<span class="w"> </span>-i<span class="w"> </span>sh<span class="w"> </span>-c<span class="w"> </span><span class="s1">'sleep 10800; [ -f ~/KEEP_EKS ] || ./aws/eks-teardown.sh'</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">  </span>&gt;<span class="w"> </span>~/eks-teardown.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span>&lt;<span class="w"> </span>/dev/null<span class="w"> </span><span class="p">&amp;</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="nv">$!</span><span class="w"> </span>&gt;<span class="w"> </span>~/eks-teardown.pid
 <a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>ps<span class="w"> </span>-o<span class="w"> </span>pid,pgid,command<span class="w"> </span>-g<span class="w"> </span><span class="s2">"</span><span class="k">$(</span>cat<span class="w"> </span>~/eks-teardown.pid<span class="k">)</span><span class="s2">"</span><span class="w">    </span><span class="c1"># sh, caffeinate e sleep no mesmo grupo</span>
 </code></pre></div>
