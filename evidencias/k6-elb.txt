@@ -1,0 +1,89 @@
+k6 (load-test/k6.js) pelo Load Balancer público — 15/11/2026, ~22:16–22:19 UTC
+Rodou como pod no próprio cluster (o Mac estava com pouca memória), apontando para o DNS público do ELB:
+  BASE_URL=http://a0fe1d39fd35640c4b0de61fe105bdb5-64525269.us-east-2.elb.amazonaws.com VUS=100 RAMP=30s HOLD=2m USERS=2
+  kubectl create configmap k6-script --from-file=load-test/k6.js
+  kubectl run k6 --image=grafana/k6 --restart=Never --overrides=<monta o ConfigMap em /scripts> -- run --quiet /scripts/k6.js
+
+== Resumo do k6 (kubectl logs k6)
+  █ THRESHOLDS 
+
+    http_req_duration{scenario:info}
+    ✓ 'p(95)<800' p(95)=122.53ms
+
+    http_req_failed{scenario:info}
+    ✓ 'rate<0.01' rate=0.00%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 406169 2215.168725/s
+    checks_succeeded...: 99.95% 405987 out of 406169
+    checks_failed......: 0.04%  182 out of 406169
+
+    ✓ info 200
+    ✓ login 200
+    ✗ me 200|429
+      ↳  98% — ✓ 178 / ✗ 2
+    ✗ exchange 200|429
+      ↳  0% — ✓ 0 / ✗ 180
+
+    HTTP
+    http_req_duration..............: avg=37.24ms min=687.35µs med=21.6ms  max=19.1s    p(90)=90.31ms p(95)=123.38ms
+      { expected_response:true }...: avg=36.92ms min=687.35µs med=21.58ms max=3.34s    p(90)=90.13ms p(95)=122.96ms
+      { scenario:info }............: avg=36.73ms min=687.35µs med=21.56ms max=921.13ms p(90)=89.94ms p(95)=122.53ms
+    http_req_failed................: 0.04%  182 out of 406170
+      { scenario:info }............: 0.00%  0 out of 405791
+    http_reqs......................: 406170 2215.174179/s
+
+    EXECUTION
+    iteration_duration.............: avg=37.59ms min=741.53µs med=21.78ms max=48.23s   p(90)=90.33ms p(95)=123.05ms
+    iterations.....................: 405809 2213.205353/s
+    vus............................: 2      min=0             max=102
+    vus_max........................: 102    min=102           max=102
+
+    NETWORK
+    data_received..................: 85 MB  461 kB/s
+    data_sent......................: 53 MB  286 kB/s
+
+
+
+== HPA do gateway durante o k6 (a cada ~12 s)
+22:15:58  cpu: 2%/50% replicas=1
+22:16:10  cpu: 2%/50% replicas=1
+22:16:22  cpu: 2%/50% replicas=1
+22:16:34  cpu: 6%/50% replicas=1
+22:16:46  cpu: 394%/50% replicas=1
+22:16:58  cpu: 500%/50% replicas=4
+22:17:09  cpu: 365%/50% replicas=8
+22:17:21  cpu: 365%/50% replicas=8
+22:17:33  cpu: 224%/50% replicas=10
+22:17:45  cpu: 179%/50% replicas=10
+22:17:57  cpu: 202%/50% replicas=10
+22:18:09  cpu: 135%/50% replicas=10
+22:18:21  cpu: 135%/50% replicas=10
+22:18:33  cpu: 95%/50% replicas=10
+22:18:45  cpu: 117%/50% replicas=10
+22:18:57  cpu: 107%/50% replicas=10
+
+== Logo após o k6: os HPAs de account/exchange/auth também escalaram e faltou memória nos 2 nós
+$ kubectl get hpa
+NAME       REFERENCE             TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+account    Deployment/account    cpu: 5%/50%   1         3         3          31m
+auth       Deployment/auth       cpu: 2%/50%   1         3         2          31m
+exchange   Deployment/exchange   cpu: 4%/50%   1         3         3          31m
+gateway    Deployment/gateway    cpu: 2%/50%   1         10        10         31m
+
+$ kubectl get pods --field-selector=status.phase=Pending
+NAME                       READY   STATUS    RESTARTS   AGE
+auth-79f4d654-p6gnj        0/1     Pending   0          2m53s
+gateway-6dcfc679cb-2qlb4   0/1     Pending   0          2m59s
+gateway-6dcfc679cb-wp8pz   0/1     Pending   0          2m59s
+
+$ kubectl describe pod <pending> | tail -2
+  Warning  FailedScheduling  63s (x2 over 2m57s)  default-scheduler  0/2 nodes are available: 2 Insufficient memory. preemption: 0/2 nodes are available: 2 No preemption victims found for incoming pod.
+
+$ kubectl describe nodes | grep -A6 'Allocated resources' | grep -E 'cpu|memory'   # requests (limits)
+  cpu                1550m (80%)   8 (414%)
+  memory             3212Mi (97%)  4436Mi (134%)
+  cpu                1400m (72%)   7250m (375%)
+  memory             2952Mi (89%)  3712Mi (112%)

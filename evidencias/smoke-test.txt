@@ -1,0 +1,20 @@
+$ ./scripts/smoke-test.sh http://a0fe1d39fd35640c4b0de61fe105bdb5-64525269.us-east-2.elb.amazonaws.com   # 2026-11-15 22:34 UTC, exchange com suporte a API key (sem chave configurada)
+✅ GET /health-check (aberto) -> 200
+✅ GET /info (aberto) -> 200
+✅ POST /auth/register -> 200
+✅ POST /auth/register (email repetido) -> 409
+✅ POST /auth/login (senha errada) -> 401
+✅ POST /auth/login devolve cookie JWT -> yes
+✅ GET /accounts sem cookie -> 401
+✅ GET /accounts com token forjado -> 401
+✅ GET /auth/me -> smoke.1794782053@insper.edu.br
+✅ GET /accounts/{id} (1ª vez: banco) -> 200
+✅ GET /accounts/{id} (2ª vez: cache Redis) -> 200
+   exchange: {"timestamp":"2026-11-15T22:34:24.394Z","status":503,"error":"Service Unavailable","path":"/exchanges/USD/BRL"}
+❌ GET /exchanges/USD/BRL tem sell/buy -> esperado yes, obtido no
+❌ id-account vem do token (header forjado descartado) -> esperado 55602009-d553-4942-8eb9-8f644ba8ac37, obtido null
+❌ GET /exchanges/XXX/YYY (par inválido) -> esperado 404, obtido 503
+SMOKE TEST FALHOU
+
+$ ./scripts/smoke-test.sh http://a0fe1d39fd35640c4b0de61fe105bdb5-64525269.us-east-2.elb.amazonaws.com:8080 | grep -c ✅
+11

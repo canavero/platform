@@ -946,12 +946,12 @@ entrega e as regras de trabalho.</p>
 <tr>
 <td>Integração</td>
 <td><code>compose.yaml</code>, smoke test, Prometheus/Grafana</td>
-<td>smoke test 15/15 no compose e no kind; bottlenecks forçados ao vivo (Redis, circuitos, 429)</td>
+<td>smoke test 14/14 no compose e no kind; bottlenecks forçados ao vivo (Redis, circuitos, 429)</td>
 </tr>
 <tr>
 <td>Kubernetes / AWS</td>
 <td>manifests, <code>deploy.sh</code>, scripts de EKS/RDS/teardown, Runbook</td>
-<td><code>kubeconform</code>, <code>shellcheck</code>, deploy real num cluster kind; <strong>AWS não executada</strong> (sem credenciais)</td>
+<td><code>kubeconform</code>, <code>shellcheck</code>, deploy em kind e <strong>deploy real no EKS</strong> (conta do grupo, 15/11/2026): smoke test pelo ELB e HPA 1 → 10</td>
 </tr>
 <tr>
 <td>CI/CD</td>
@@ -980,7 +980,9 @@ antes de cada build pesado).</p>
 <li>uma checagem de segurança passava por engano (<code>null == null</code>) e foi reescrita;</li>
 <li>no Kubernetes, a variável <code>REDIS_PORT=tcp://…</code> injetada pelo Service <code>redis</code> derrubava três
   serviços — invisível no Docker Compose, só apareceu no teste em kind;</li>
-<li>uma variável de zsh (<code>$img:latest</code>) virou <code>atest</code> por causa do modificador <code>:l</code>.</li>
+<li>uma variável de zsh (<code>$img:latest</code>) virou <code>atest</code> por causa do modificador <code>:l</code>;</li>
+<li>no EKS, a AwesomeAPI devolveu <code>429 QuotaExceeded</code> para os IPs dos NAT Gateways (do Mac, 200):
+  só o deploy real mostrou que o exchange precisa de API key na nuvem.</li>
 </ul>
 <h2 id="responsabilidade-do-aluno">Responsabilidade do aluno</h2>
 <p>Usar IA não tira a responsabilidade de entender e defender o projeto. Antes da entrega, o Enzo
@@ -988,7 +990,7 @@ deve:</p>
 <ul class="task-list">
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> ler o código de cada serviço e saber explicar o fluxo JWT (login → cookie → <code>/auth/solve</code> → <code>id-account</code>);</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> saber justificar cada bottleneck e os números medidos;</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> executar o <a href="../projeto/runbook/">AWS Runbook</a> por conta própria e gravar os vídeos;</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> reler o <a href="../projeto/runbook/">AWS Runbook</a> e as evidências do deploy real, e gravar os vídeos;</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> revisar os custos no AWS Pricing Calculator e colar o link da estimativa;</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> completar as <a href="../atividades/">atividades</a> feitas em aula que não estão aqui.</li>
 </ul>

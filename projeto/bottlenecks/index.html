@@ -1305,8 +1305,9 @@ No Kubernetes, as <strong>probes</strong> de liveness/readiness usam os health g
 <h2 id="5-vulnerability-scanning-trivy-no-ci">5. Vulnerability scanning (Trivy no CI)</h2>
 <p>Cada push em <code>main</code> de um serviço publica a imagem e roda o <strong>Trivy</strong> sobre ela
 (<code>aquasec/trivy image --severity HIGH,CRITICAL</code>). O relatório aparece no log do job
-<em>Docker Hub (build, push, scan)</em>; está configurado para <strong>não bloquear</strong> (<code>--exit-code 0</code>) —
-trocar para <code>1</code> transforma o scan em <em>gate</em>. Outras escolhas que reduzem superfície de ataque:
+<em>Imagem (ECR ou Docker Hub, scan)</em>; está configurado para <strong>não bloquear</strong> (<code>--exit-code 0</code>) —
+trocar para <code>1</code> transforma o scan em <em>gate</em>. No ECR, os repositórios também têm <em>scan on push</em>
+(<code>aws ecr describe-image-scan-findings --repository-name gateway-service --image-id imageTag=latest</code>). Outras escolhas que reduzem superfície de ataque:
 imagem base <strong>JRE</strong> (sem compilador), segredos fora do código (Secrets do Kubernetes / GitHub),
 <code>permissions: contents: read</code> nos workflows, e o header <code>id-account</code> só pode vir do gateway.</p>
 <hr />

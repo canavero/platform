@@ -1,0 +1,53 @@
+$ kubectl get nodes -o wide
+NAME                                            STATUS   ROLES    AGE   VERSION               INTERNAL-IP       EXTERNAL-IP   OS-IMAGE                        KERNEL-VERSION                            CONTAINER-RUNTIME
+ip-192-168-149-34.us-east-2.compute.internal    Ready    <none>   24m   v1.37.1-eks-9adbfea   192.168.149.34    <none>        Amazon Linux 2023.12.20261112   6.18.62-127.179.amzn2023.x86_64 (amd64)   containerd://2.3.7+unknown
+ip-192-168-243-206.us-east-2.compute.internal   Ready    <none>   24m   v1.37.1-eks-9adbfea   192.168.243.206   <none>        Amazon Linux 2023.12.20261112   6.18.62-127.179.amzn2023.x86_64 (amd64)   containerd://2.3.7+unknown
+
+$ kubectl get pods -o wide
+NAME                        READY   STATUS    RESTARTS   AGE   IP                NODE                                            NOMINATED NODE   READINESS GATES
+account-7d8fd7d6f5-2cdnr    1/1     Running   0          14m   192.168.177.192   ip-192-168-149-34.us-east-2.compute.internal    <none>           <none>
+auth-79f4d654-nq5tl         1/1     Running   0          14m   192.168.249.52    ip-192-168-243-206.us-east-2.compute.internal   <none>           <none>
+exchange-5556fbdcfb-2qh94   1/1     Running   0          14m   192.168.238.12    ip-192-168-243-206.us-east-2.compute.internal   <none>           <none>
+gateway-6dcfc679cb-s2tbk    1/1     Running   0          16m   192.168.233.31    ip-192-168-243-206.us-east-2.compute.internal   <none>           <none>
+redis-8445bf6b45-mnh2s      1/1     Running   0          16m   192.168.222.121   ip-192-168-243-206.us-east-2.compute.internal   <none>           <none>
+
+$ kubectl get svc
+NAME         TYPE           CLUSTER-IP       EXTERNAL-IP                                                             PORT(S)                       AGE
+account      ClusterIP      10.100.253.200   <none>                                                                  8080/TCP                      16m
+auth         ClusterIP      10.100.9.241     <none>                                                                  8080/TCP                      16m
+exchange     ClusterIP      10.100.175.23    <none>                                                                  8080/TCP                      16m
+gateway      LoadBalancer   10.100.255.126   a0fe1d39fd35640c4b0de61fe105bdb5-64525269.us-east-2.elb.amazonaws.com   80:30973/TCP,8080:30219/TCP   16m
+kubernetes   ClusterIP      10.100.0.1       <none>                                                                  443/TCP                       27m
+redis        ClusterIP      10.100.178.59    <none>                                                                  6379/TCP                      16m
+
+$ kubectl get hpa
+NAME       REFERENCE             TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+account    Deployment/account    cpu: 3%/50%   1         3         1          16m
+auth       Deployment/auth       cpu: 2%/50%   1         3         1          16m
+exchange   Deployment/exchange   cpu: 4%/50%   1         3         1          16m
+gateway    Deployment/gateway    cpu: 2%/50%   1         10        1          16m
+
+$ kubectl top nodes
+NAME                                            CPU(cores)   CPU(%)   MEMORY(bytes)   MEMORY(%)   
+ip-192-168-149-34.us-east-2.compute.internal    43m          2%       873Mi           26%         
+ip-192-168-243-206.us-east-2.compute.internal   61m          3%       1222Mi          37%         
+
+$ kubectl top pods
+NAME                        CPU(cores)   MEMORY(bytes)   
+account-7d8fd7d6f5-2cdnr    3m           258Mi           
+auth-79f4d654-nq5tl         2m           185Mi           
+exchange-5556fbdcfb-2qh94   4m           206Mi           
+gateway-6dcfc679cb-s2tbk    6m           203Mi           
+redis-8445bf6b45-mnh2s      5m           3Mi             
+
+$ aws eks describe-cluster --name eks-store --query 'cluster.[status,version]'
+ACTIVE	1.37
+
+$ aws eks describe-nodegroup --cluster-name eks-store --nodegroup-name eks-store-nodes --query 'nodegroup.[status,instanceTypes[0],scalingConfig.minSize,scalingConfig.desiredSize,scalingConfig.maxSize]'
+ACTIVE	t3.medium	2	2	3
+
+$ aws rds describe-db-instances --db-instance-identifier eks-store-db --query 'DBInstances[0].[DBInstanceStatus,Engine,EngineVersion,DBInstanceClass,AllocatedStorage,StorageType,MultiAZ,PubliclyAccessible]'
+available	postgres	17.9	db.t4g.micro	20	gp3	False	False
+
+$ aws ecr describe-repositories --query 'repositories[].repositoryName'
+gateway-service	account-service	auth-service	exchange-service

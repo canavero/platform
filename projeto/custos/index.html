@@ -740,6 +740,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#custo-real-do-deploy-de-15112026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custo real do deploy de 15/11/2026
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#b-otimizado-mesma-arquitetura-mais-barato" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -778,10 +789,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-docker-hub-ecr" class="md-nav__link">
+  <a href="#3-ecr-docker-hub" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Docker Hub × ECR
+        3. ECR × Docker Hub
       
     </span>
   </a>
@@ -1008,6 +1019,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#custo-real-do-deploy-de-15112026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custo real do deploy de 15/11/2026
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#b-otimizado-mesma-arquitetura-mais-barato" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1046,10 +1068,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-docker-hub-ecr" class="md-nav__link">
+  <a href="#3-ecr-docker-hub" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Docker Hub × ECR
+        3. ECR × Docker Hub
       
     </span>
   </a>
@@ -1191,9 +1213,9 @@
   <a href="https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/index.json">AWS Price List</a>
   (EKS, ELB, EC2, RDS e IPv4 público conferidos nos arquivos oficiais; NAT Gateway, EBS e
   ElastiCache pelas páginas de preço de cada serviço). Impostos não incluídos.</li>
-<li>Arquitetura exatamente como os scripts criam: template de VPC do enunciado (<strong>2 NAT
-  Gateways</strong>), 2 nós <code>t3.medium</code>, Postgres e Redis dentro do cluster, 1 Classic Load Balancer
-  (Service <code>LoadBalancer</code> do gateway).</li>
+<li>Arquitetura exatamente como os scripts criaram no deploy real: template de VPC do enunciado
+  (<strong>2 NAT Gateways</strong>), 2 nós <code>t3.medium</code>, <strong>RDS PostgreSQL <code>db.t4g.micro</code></strong>, Redis dentro do
+  cluster, imagens no <strong>ECR</strong> e 1 Classic Load Balancer (Service <code>LoadBalancer</code> do gateway).</li>
 </ul>
 <table>
 <thead>
@@ -1312,14 +1334,19 @@
 <td style="text-align: right;">18,41</td>
 </tr>
 <tr>
-<td>Postgres + Redis no cluster</td>
-<td>usam os nós</td>
+<td>RDS PostgreSQL <code>db.t4g.micro</code> Single-AZ + 20 GB gp3</td>
+<td>0,016 × 730 + 20 × 0,115</td>
+<td style="text-align: right;">13,98</td>
+</tr>
+<tr>
+<td>Redis no cluster</td>
+<td>usa os nós</td>
 <td style="text-align: right;">0,00</td>
 </tr>
 <tr>
-<td>Docker Hub (imagens públicas)</td>
-<td>plano gratuito</td>
-<td style="text-align: right;">0,00</td>
+<td>ECR (4 imagens <code>amd64</code> + <code>arm64</code>, ≈ 1,4 GB)</td>
+<td>1,4 × 0,10</td>
+<td style="text-align: right;">0,14</td>
 </tr>
 <tr>
 <td>GitHub Actions + Pages</td>
@@ -1334,34 +1361,110 @@
 <tr>
 <td><strong>Total</strong></td>
 <td></td>
-<td style="text-align: right;"><strong>≈ 236,55</strong></td>
+<td style="text-align: right;"><strong>≈ 250,67</strong></td>
 </tr>
 <tr>
 <td><strong>Por hora</strong></td>
-<td>236,55 ÷ 730</td>
-<td style="text-align: right;"><strong>≈ 0,32</strong></td>
-</tr>
-<tr>
-<td>+ RDS opcional (<code>db.t4g.micro</code> Single-AZ + 20 GB gp3)</td>
-<td>0,016 × 730 + 20 × 0,115</td>
-<td style="text-align: right;">+ 13,98</td>
+<td>250,67 ÷ 730</td>
+<td style="text-align: right;"><strong>≈ 0,34</strong></td>
 </tr>
 </tbody>
 </table>
-<pre class="mermaid"><code>pie showData title Cenário A — US$ 236,55/mês
+<pre class="mermaid"><code>pie showData title Cenário A — US$ 250,67/mês
     "EKS control plane" : 73.00
     "NAT Gateways (2)" : 66.60
     "Nós EC2 (2 x t3.medium)" : 60.74
     "Load Balancer" : 18.41
     "IPv4 públicos" : 14.60
-    "EBS" : 3.20</code></pre>
+    "RDS" : 13.98
+    "EBS + ECR" : 3.34</code></pre>
 <div class="admonition info">
-<p class="admonition-title">Custo real da entrega</p>
+<p class="admonition-title">Custo da entrega</p>
 <p>O projeto não precisa do cluster ligado o mês inteiro: uma sessão de <strong>3 h</strong> (criar, implantar,
-gravar o teste de carga, destruir) custa <strong>≈ 3 × 0,32 ≈ US$ 1,00</strong>. O maior risco financeiro é
-<strong>esquecer o cluster ligado</strong> (≈ US$ 7,80 por dia) — por isso o <code>eks-teardown.sh</code> e o alerta do
-AWS Budgets no Runbook.</p>
+gravar o teste de carga, destruir) custa <strong>≈ 3 × 0,34 ≈ US$ 1,03</strong>. O maior risco financeiro é
+<strong>esquecer o cluster ligado</strong> (≈ US$ 8,20 por dia) — por isso o <code>eks-teardown.sh</code>, o
+teardown automático de segurança (8 h) e o alerta do AWS Budgets no Runbook.</p>
 </div>
+<h3 id="custo-real-do-deploy-de-15112026">Custo real do deploy de 15/11/2026</h3>
+<p>Recursos criados (UTC): NAT Gateways 21:29, cluster 21:31, nós 21:39, RDS 21:43, ELB 21:48.
+Com tudo ligado, o custo por hora é:</p>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th style="text-align: right;">US$/h</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EKS control plane</td>
+<td style="text-align: right;">0,1000</td>
+</tr>
+<tr>
+<td>2 NAT Gateways</td>
+<td style="text-align: right;">0,0900</td>
+</tr>
+<tr>
+<td>2 × <code>t3.medium</code></td>
+<td style="text-align: right;">0,0832</td>
+</tr>
+<tr>
+<td>Classic Load Balancer</td>
+<td style="text-align: right;">0,0250</td>
+</tr>
+<tr>
+<td>4 IPv4 públicos (2 NAT + 2 do ELB, conferidos com <code>aws ec2 describe-network-interfaces</code>)</td>
+<td style="text-align: right;">0,0200</td>
+</tr>
+<tr>
+<td>RDS <code>db.t4g.micro</code> + 20 GB gp3</td>
+<td style="text-align: right;">0,0192</td>
+</tr>
+<tr>
+<td>EBS 2 × 20 GB gp3</td>
+<td style="text-align: right;">0,0044</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td style="text-align: right;"><strong>≈ 0,342</strong></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Cenário</th>
+<th style="text-align: right;">Horas</th>
+<th style="text-align: right;">Custo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Criar, implantar, smoke test e teste de carga (21:29 → 22:30)</td>
+<td style="text-align: right;">≈ 1</td>
+<td style="text-align: right;">≈ US$ 0,34</td>
+</tr>
+<tr>
+<td>Até a gravação do vídeo do HPA e o teardown manual (estimado)</td>
+<td style="text-align: right;">≈ 4</td>
+<td style="text-align: right;">≈ US$ 1,40</td>
+</tr>
+<tr>
+<td>Pior caso: ninguém destrói e o teardown automático roda após 8 h</td>
+<td style="text-align: right;">≈ 9,5</td>
+<td style="text-align: right;">≈ US$ 3,25</td>
+</tr>
+</tbody>
+</table>
+<p>Some a isso centavos de NAT por GB (pull das imagens do ECR pelos nós, ≈ 1,5 GB × 0,045) e de
+CPU acima do baseline dos <code>t3</code> (modo <em>unlimited</em>).</p>
+<p><strong>Cost Explorer</strong>: está habilitado na conta e mostrava <strong>US$ 0,00</strong> de 01/11 a 15/11 (nenhum
+recurso antes desta sessão). A AWS publica os custos com ~24 h de atraso, então o valor desta
+sessão aparece a partir de 16–17/11:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>aws<span class="w"> </span>ce<span class="w"> </span>get-cost-and-usage<span class="w"> </span>--time-period<span class="w"> </span><span class="nv">Start</span><span class="o">=</span><span class="m">2026</span>-11-15,End<span class="o">=</span><span class="m">2026</span>-11-18<span class="w"> </span>--granularity<span class="w"> </span>DAILY<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span>--metrics<span class="w"> </span>UnblendedCost<span class="w"> </span>--group-by<span class="w"> </span><span class="nv">Type</span><span class="o">=</span>DIMENSION,Key<span class="o">=</span>SERVICE<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span>--query<span class="w"> </span><span class="s1">'ResultsByTime[].[TimePeriod.Start, Groups[].[Keys[0], Metrics.UnblendedCost.Amount]]'</span>
+</code></pre></div>
 <h3 id="b-otimizado-mesma-arquitetura-mais-barato">B — Otimizado (mesma arquitetura, mais barato)</h3>
 <table>
 <thead>
@@ -1383,9 +1486,9 @@ AWS Budgets no Runbook.</p>
 <td style="text-align: right;">−11,68</td>
 </tr>
 <tr>
-<td><strong>Total</strong></td>
+<td><strong>Total</strong> (a partir do A, com RDS e ECR)</td>
 <td></td>
-<td style="text-align: right;"><strong>≈ 188,37</strong></td>
+<td style="text-align: right;"><strong>≈ 202,49</strong></td>
 </tr>
 </tbody>
 </table>
@@ -1467,45 +1570,52 @@ múltiplos nós toleram a perda de uma instância), <strong>Savings Plans</stron
 <li><strong>Amazon EC2</strong> — 2 instâncias <code>t3.medium</code>, Linux, On-Demand, 100 % de uso; EBS gp3 20 GB cada.</li>
 <li><strong>Amazon VPC</strong> — NAT Gateway: 2, 20 GB processados; <em>Public IPv4 addresses</em>: 4 em uso.</li>
 <li><strong>Elastic Load Balancing</strong> — Classic Load Balancer: 1, 20 GB processados.</li>
-<li>(opcional) <strong>Amazon RDS for PostgreSQL</strong> — <code>db.t4g.micro</code>, Single-AZ, On-Demand, 20 GB gp3.</li>
+<li><strong>Amazon RDS for PostgreSQL</strong> — <code>db.t4g.micro</code>, Single-AZ, On-Demand, 20 GB gp3.</li>
+<li><strong>Amazon ECR</strong> — 1,4 GB armazenados.</li>
 </ol>
-<p>O total deve bater com a tabela A (≈ US$ 236,55/mês; ≈ US$ 250,53 com RDS).
+<p>O total deve bater com a tabela A (≈ US$ 250,67/mês).
 <strong>Link da estimativa:</strong> <em>a gerar no calculator e colar aqui</em>.</p>
-<h2 id="3-docker-hub-ecr">3. Docker Hub × ECR</h2>
+<h2 id="3-ecr-docker-hub">3. ECR × Docker Hub</h2>
 <table>
 <thead>
 <tr>
 <th></th>
-<th>Docker Hub (usado)</th>
-<th>Amazon ECR</th>
+<th>Amazon ECR (usado no EKS)</th>
+<th>Docker Hub (alternativa)</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>Custo</td>
+<td>US$ 0,10/GB-mês (≈ US$ 0,14 aqui); pull na mesma região grátis</td>
 <td>grátis (repositórios públicos)</td>
-<td>US$ 0,10/GB-mês; pull na mesma região grátis</td>
 </tr>
 <tr>
 <td>Limite de pull</td>
-<td>10/h por IP sem login; 100/h com login (Personal)</td>
 <td>sem limite prático</td>
+<td>10/h por IP sem login; 100/h com login (Personal)</td>
 </tr>
 <tr>
 <td>Privacidade</td>
-<td>imagens públicas</td>
 <td>privado, IAM (a role dos nós já tem <code>AmazonEC2ContainerRegistryReadOnly</code>)</td>
+<td>imagens públicas</td>
+</tr>
+<tr>
+<td>Segurança</td>
+<td><em>scan on push</em> (vulnerabilidades) grátis</td>
+<td>—</td>
 </tr>
 <tr>
 <td>Integração</td>
+<td>nativa com EKS, IAM e OIDC do GitHub Actions</td>
 <td>qualquer cluster/CI</td>
-<td>nativa com EKS e IAM</td>
 </tr>
 </tbody>
 </table>
-<p>Escolhi o Docker Hub por ser o padrão da disciplina (hands-on 4) e custo zero; para mitigar o
-limite de pulls, os manifests usam <code>imagePullPolicy: IfNotPresent</code> e o CI faz deploy com tag
-imutável. Em produção, <strong>ECR</strong> (custo de centavos) é a escolha.</p>
+<p>No deploy real usei o <strong>ECR</strong> da conta do grupo: não havia Docker Hub configurado, o pull não
+tem limite, as imagens ficam privadas e os nós autenticam pela role do node group, sem segredo
+no cluster. O custo é de centavos. O Docker Hub (padrão do hands-on 4) continua funcionando com
+<code>DOCKERHUB_USERNAME=&lt;usuario&gt;</code> nos scripts e no CI.</p>
 <h2 id="4-paas-onde-o-projeto-usa">4. PaaS — onde o projeto usa</h2>
 <pre class="mermaid"><code>flowchart LR
     subgraph iaas [IaaS — nós gerenciamos SO/rede]
@@ -1519,12 +1629,12 @@ imutável. Em produção, <strong>ECR</strong> (custo de centavos) é a escolha.
     subgraph paas [PaaS — só usamos]
         elb[Elastic Load Balancing]
         rds[RDS PostgreSQL]
+        ecr[Amazon ECR]
         cf[CloudFormation]
         gha[GitHub Actions]
         pages[GitHub Pages]
     end
     subgraph saas [SaaS / APIs]
-        hub[Docker Hub]
         awesome[AwesomeAPI]
         gh[GitHub]
     end</code></pre>
@@ -1557,10 +1667,16 @@ imutável. Em produção, <strong>ECR</strong> (custo de centavos) é a escolha.
 <td>servidores de balanceamento, health checks, escala do LB</td>
 </tr>
 <tr>
-<td><strong>Amazon RDS</strong> (opcional)</td>
+<td><strong>Amazon RDS</strong></td>
 <td>PaaS (DBaaS)</td>
-<td>Postgres gerenciado em subnet privada</td>
+<td>PostgreSQL 17 gerenciado em subnet privada</td>
 <td>patches, backups, failover Multi-AZ, storage</td>
+</tr>
+<tr>
+<td><strong>Amazon ECR</strong></td>
+<td>PaaS (registry)</td>
+<td>imagens privadas dos 4 serviços, <em>scan on push</em></td>
+<td>servidor de registry, storage, autenticação</td>
 </tr>
 <tr>
 <td><strong>CloudFormation</strong></td>
@@ -1581,15 +1697,9 @@ imutável. Em produção, <strong>ECR</strong> (custo de centavos) é a escolha.
 <td>servidor web, TLS, CDN</td>
 </tr>
 <tr>
-<td><strong>Docker Hub</strong></td>
-<td>SaaS</td>
-<td>registry das imagens</td>
-<td>armazenamento e distribuição de imagens</td>
-</tr>
-<tr>
 <td><strong>AwesomeAPI</strong></td>
 <td>SaaS (API)</td>
-<td>cotações de câmbio</td>
+<td>cotações de câmbio; a partir da AWS exige API key (grátis até 100 mil req/mês)</td>
 <td>coleta e atualização das cotações</td>
 </tr>
 </tbody>
@@ -1711,13 +1821,13 @@ confiabilidade) <strong>antes</strong> de o contrato ser quebrado — como na au
 99,5 % também é compatível com o cenário A + RDS Single-AZ (99,43 % de piso teórico só seria um
 problema em um mês com falha longa do banco); para garantir 99,5 % com folga, use o cenário C.</p>
 <p>SLIs medidos com as métricas que o projeto já exporta para o Prometheus:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># disponibilidade (30 dias)</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="mi">1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="k">sum</span><span class="o">(</span><span class="kr">rate</span><span class="o">(</span><span class="nv">http_server_requests_seconds_count</span><span class="p">{</span><span class="nl">job</span><span class="o">=</span><span class="p">"</span><span class="s">GatewayMetrics</span><span class="p">",</span><span class="nl">status</span><span class="o">=~</span><span class="p">"</span><span class="s">5..</span><span class="p">"}[</span><span class="s">30d</span><span class="p">]</span><span class="o">))</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="o">/</span><span class="w"> </span><span class="k">sum</span><span class="o">(</span><span class="kr">rate</span><span class="o">(</span><span class="nv">http_server_requests_seconds_count</span><span class="p">{</span><span class="nl">job</span><span class="o">=</span><span class="p">"</span><span class="s">GatewayMetrics</span><span class="p">"}[</span><span class="s">30d</span><span class="p">]</span><span class="o">))</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="c1"># taxa de queima do orçamento (alerta se &gt; 14,4 por 1 h — consome 2 % do orçamento)</span>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="o">(</span><span class="k">sum</span><span class="o">(</span><span class="kr">rate</span><span class="o">(</span><span class="nv">http_server_requests_seconds_count</span><span class="p">{</span><span class="nl">job</span><span class="o">=</span><span class="p">"</span><span class="s">GatewayMetrics</span><span class="p">",</span><span class="nl">status</span><span class="o">=~</span><span class="p">"</span><span class="s">5..</span><span class="p">"}[</span><span class="s">1h</span><span class="p">]</span><span class="o">))</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">  </span><span class="o">/</span><span class="w"> </span><span class="k">sum</span><span class="o">(</span><span class="kr">rate</span><span class="o">(</span><span class="nv">http_server_requests_seconds_count</span><span class="p">{</span><span class="nl">job</span><span class="o">=</span><span class="p">"</span><span class="s">GatewayMetrics</span><span class="p">"}[</span><span class="s">1h</span><span class="p">]</span><span class="o">)))</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">0.005</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># disponibilidade (30 dias)</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="mi">1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="k">sum</span><span class="o">(</span><span class="kr">rate</span><span class="o">(</span><span class="nv">http_server_requests_seconds_count</span><span class="p">{</span><span class="nl">job</span><span class="o">=</span><span class="p">"</span><span class="s">GatewayMetrics</span><span class="p">",</span><span class="nl">status</span><span class="o">=~</span><span class="p">"</span><span class="s">5..</span><span class="p">"}[</span><span class="s">30d</span><span class="p">]</span><span class="o">))</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="o">/</span><span class="w"> </span><span class="k">sum</span><span class="o">(</span><span class="kr">rate</span><span class="o">(</span><span class="nv">http_server_requests_seconds_count</span><span class="p">{</span><span class="nl">job</span><span class="o">=</span><span class="p">"</span><span class="s">GatewayMetrics</span><span class="p">"}[</span><span class="s">30d</span><span class="p">]</span><span class="o">))</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="c1"># taxa de queima do orçamento (alerta se &gt; 14,4 por 1 h — consome 2 % do orçamento)</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="o">(</span><span class="k">sum</span><span class="o">(</span><span class="kr">rate</span><span class="o">(</span><span class="nv">http_server_requests_seconds_count</span><span class="p">{</span><span class="nl">job</span><span class="o">=</span><span class="p">"</span><span class="s">GatewayMetrics</span><span class="p">",</span><span class="nl">status</span><span class="o">=~</span><span class="p">"</span><span class="s">5..</span><span class="p">"}[</span><span class="s">1h</span><span class="p">]</span><span class="o">))</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">  </span><span class="o">/</span><span class="w"> </span><span class="k">sum</span><span class="o">(</span><span class="kr">rate</span><span class="o">(</span><span class="nv">http_server_requests_seconds_count</span><span class="p">{</span><span class="nl">job</span><span class="o">=</span><span class="p">"</span><span class="s">GatewayMetrics</span><span class="p">"}[</span><span class="s">1h</span><span class="p">]</span><span class="o">)))</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">0.005</span>
 </code></pre></div>
 <p>O que no projeto protege o SLO: readiness probes + rolling update (deploy sem downtime),
 circuit breakers (falha rápida e parcial em vez de cascata), cache (o exchange continua

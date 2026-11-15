@@ -644,10 +644,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-imagens-no-docker-hub" class="md-nav__link">
+  <a href="#2-imagens-no-amazon-ecr" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Imagens no Docker Hub
+        2. Imagens no Amazon ECR
       
     </span>
   </a>
@@ -666,10 +666,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-opcional-banco-gerenciado-amazon-rds" class="md-nav__link">
+  <a href="#4-banco-gerenciado-amazon-rds" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. (Opcional) Banco gerenciado — Amazon RDS
+        4. Banco gerenciado — Amazon RDS
       
     </span>
   </a>
@@ -699,10 +699,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#7-cicd-deploy-automatico-no-eks" class="md-nav__link">
+  <a href="#7-cicd-imagem-no-ecr-e-deploy-automatico-no-eks" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7. CI/CD: deploy automático no EKS
+        7. CI/CD: imagem no ECR e deploy automático no EKS
       
     </span>
   </a>
@@ -984,10 +984,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-imagens-no-docker-hub" class="md-nav__link">
+  <a href="#2-imagens-no-amazon-ecr" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Imagens no Docker Hub
+        2. Imagens no Amazon ECR
       
     </span>
   </a>
@@ -1006,10 +1006,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-opcional-banco-gerenciado-amazon-rds" class="md-nav__link">
+  <a href="#4-banco-gerenciado-amazon-rds" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. (Opcional) Banco gerenciado — Amazon RDS
+        4. Banco gerenciado — Amazon RDS
       
     </span>
   </a>
@@ -1039,10 +1039,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#7-cicd-deploy-automatico-no-eks" class="md-nav__link">
+  <a href="#7-cicd-imagem-no-ecr-e-deploy-automatico-no-eks" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7. CI/CD: deploy automático no EKS
+        7. CI/CD: imagem no ECR e deploy automático no EKS
       
     </span>
   </a>
@@ -1165,8 +1165,8 @@ VPC via CloudFormation (template <code>amazon-eks-vpc-private-subnets.yaml</code
 cluster EKS → role do node group → node group só nas subnets privadas → kubeconfig.</p>
 <div class="admonition danger">
 <p class="admonition-title">Isto custa dinheiro</p>
-<p>Com 2 nós <code>t3.medium</code>, 2 NAT Gateways (do template) e 1 Load Balancer, o ambiente custa
-<strong>≈ US$ 0,33/hora (≈ US$ 7,90/dia)</strong> enquanto existir — mesmo parado.
+<p>Com 2 nós <code>t3.medium</code>, 2 NAT Gateways (do template), 1 Load Balancer e o RDS <code>db.t4g.micro</code>,
+o ambiente custa <strong>≈ US$ 0,34/hora (≈ US$ 8,20/dia)</strong> enquanto existir — mesmo parado.
 Planeje uma sessão de ~2–3 h (≈ US$ 1) e rode o <strong>passo 9 (teardown)</strong> no final.
 Detalhes na análise de custos (<code>docs/projeto/custos.md</code>).</p>
 </div>
@@ -1188,15 +1188,15 @@ Detalhes na análise de custos (<code>docs/projeto/custos.md</code>).</p>
 </tr>
 <tr>
 <td style="text-align: right;">1</td>
-<td>Usuário IAM, access key, <code>aws configure</code>, alerta de orçamento</td>
+<td>Credenciais (SSO ou usuário IAM), alerta de orçamento</td>
 <td style="text-align: right;">10 min</td>
 <td>—</td>
 </tr>
 <tr>
 <td style="text-align: right;">2</td>
-<td>Imagens no Docker Hub</td>
+<td>Imagens no Amazon ECR (<code>./scripts/push-images.sh</code>)</td>
 <td style="text-align: right;">5 min</td>
-<td>—</td>
+<td>centavos/mês</td>
 </tr>
 <tr>
 <td style="text-align: right;">3</td>
@@ -1206,7 +1206,7 @@ Detalhes na análise de custos (<code>docs/projeto/custos.md</code>).</p>
 </tr>
 <tr>
 <td style="text-align: right;">4</td>
-<td>(opcional) <code>./aws/rds-create.sh</code></td>
+<td><code>./aws/rds-create.sh</code> (PostgreSQL no RDS)</td>
 <td style="text-align: right;">10 min</td>
 <td>+ US$ 0,02/h</td>
 </tr>
@@ -1249,7 +1249,17 @@ Detalhes na análise de custos (<code>docs/projeto/custos.md</code>).</p>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>docker<span class="w"> </span>--version<span class="w">                   </span><span class="c1"># Docker Desktop ligado (para build/push das imagens)</span>
 </code></pre></div>
 <h2 id="1-conta-usuario-iam-e-credenciais">1. Conta, usuário IAM e credenciais</h2>
-<p>Seguindo a página <em>AWS</em> do enunciado (nunca use o usuário root no dia a dia):</p>
+<div class="admonition tip">
+<p class="admonition-title">Conta do grupo no Insper (IAM Identity Center / SSO) — o caminho usado</p>
+<p>A conta do grupo já vem com o papel <code>AdministratorAccess</code> via SSO; não crie usuário nem access key:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>aws<span class="w"> </span>configure<span class="w"> </span>sso<span class="w">          </span><span class="c1"># uma vez: start URL do Insper, região do SSO, conta do grupo, us-east-2</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>aws<span class="w"> </span>sso<span class="w"> </span>login<span class="w">              </span><span class="c1"># quando a sessão expirar</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>aws<span class="w"> </span>sts<span class="w"> </span>get-caller-identity
+</code></pre></div>
+<p><strong>Nunca</strong> coloque ID da conta, ARNs, chaves ou senhas em arquivos versionados: os scripts
+descobrem a conta em tempo de execução (<code>aws sts get-caller-identity</code>).</p>
+</div>
+<p>Conta própria, seguindo a página <em>AWS</em> do enunciado (nunca use o usuário root no dia a dia):</p>
 <ol>
 <li>Console AWS → <strong>IAM → Users → Create user</strong> (ex.: <code>enzo-admin</code>), com acesso ao console.</li>
 <li><strong>Permissions → Attach policies directly → <code>AdministratorAccess</code></strong> (projeto acadêmico; em
@@ -1258,50 +1268,31 @@ Detalhes na análise de custos (<code>docs/projeto/custos.md</code>).</p>
    <em>Security credentials</em> → <em>Create access key</em> → <em>Command Line Interface (CLI)</em>).</li>
 <li>Configure a CLI na região do projeto (<strong>us-east-2</strong>, Ohio — a mesma do enunciado):</li>
 </ol>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>aws<span class="w"> </span>configure<span class="w">            </span><span class="c1"># Access key, Secret, region: us-east-2, output: json</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>aws<span class="w"> </span>configure<span class="w"> </span>list
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>aws<span class="w"> </span>sts<span class="w"> </span>get-caller-identity
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>aws<span class="w"> </span>configure<span class="w">            </span><span class="c1"># Access key, Secret, region: us-east-2, output: json</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>aws<span class="w"> </span>configure<span class="w"> </span>list
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>aws<span class="w"> </span>sts<span class="w"> </span>get-caller-identity
 </code></pre></div>
 <p><strong>Alerta de orçamento (recomendado)</strong> — avisa por e-mail se o gasto do mês passar de US$ 20:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nv">ACCOUNT</span><span class="o">=</span><span class="k">$(</span>aws<span class="w"> </span>sts<span class="w"> </span>get-caller-identity<span class="w"> </span>--query<span class="w"> </span>Account<span class="w"> </span>--output<span class="w"> </span>text<span class="k">)</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>aws<span class="w"> </span>budgets<span class="w"> </span>create-budget<span class="w"> </span>--account-id<span class="w"> </span><span class="s2">"</span><span class="nv">$ACCOUNT</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span>--budget<span class="w"> </span><span class="s1">'{"BudgetName":"plataformas","BudgetLimit":{"Amount":"20","Unit":"USD"},"TimeUnit":"MONTHLY","BudgetType":"COST"}'</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span>--notifications-with-subscribers<span class="w"> </span><span class="s1">'[{"Notification":{"NotificationType":"ACTUAL","ComparisonOperator":"GREATER_THAN","Threshold":50},"Subscribers":[{"SubscriptionType":"EMAIL","Address":"SEU-EMAIL@exemplo.com"}]}]'</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nv">ACCOUNT</span><span class="o">=</span><span class="k">$(</span>aws<span class="w"> </span>sts<span class="w"> </span>get-caller-identity<span class="w"> </span>--query<span class="w"> </span>Account<span class="w"> </span>--output<span class="w"> </span>text<span class="k">)</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>aws<span class="w"> </span>budgets<span class="w"> </span>create-budget<span class="w"> </span>--account-id<span class="w"> </span><span class="s2">"</span><span class="nv">$ACCOUNT</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span>--budget<span class="w"> </span><span class="s1">'{"BudgetName":"plataformas","BudgetLimit":{"Amount":"20","Unit":"USD"},"TimeUnit":"MONTHLY","BudgetType":"COST"}'</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span>--notifications-with-subscribers<span class="w"> </span><span class="s1">'[{"Notification":{"NotificationType":"ACTUAL","ComparisonOperator":"GREATER_THAN","Threshold":50},"Subscribers":[{"SubscriptionType":"EMAIL","Address":"SEU-EMAIL@exemplo.com"}]}]'</span>
 </code></pre></div>
 <div class="admonition tip">
 <p class="admonition-title">AWS Academy / Learner Lab</p>
 <p>Se a conta não permite criar roles IAM, use a <code>LabRole</code> existente:
-<code>CLUSTER_ROLE_ARN=arn:aws:iam::&lt;conta&gt;:role/LabRole NODE_ROLE_ARN=arn:aws:iam::&lt;conta&gt;:role/LabRole ./aws/eks-create.sh</code>.
-As credenciais temporárias incluem <code>AWS_SESSION_TOKEN</code> (cadastre também no GitHub).</p>
+<code>CLUSTER_ROLE_ARN=arn:aws:iam::&lt;conta&gt;:role/LabRole NODE_ROLE_ARN=arn:aws:iam::&lt;conta&gt;:role/LabRole ./aws/eks-create.sh</code>.</p>
 </div>
-<h2 id="2-imagens-no-docker-hub">2. Imagens no Docker Hub</h2>
-<p>O EKS baixa as imagens <code>DOCKERHUB_USER/&lt;serviço&gt;-service</code>. Os nós são <strong>x86 (t3)</strong>, então a imagem
-precisa de <code>linux/amd64</code> — os dois caminhos abaixo publicam <code>amd64</code> + <code>arm64</code>.</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Via CI (recomendado)</label><label for="__tabbed_1_2">Manual (da sua máquina)</label></div>
-<div class="tabbed-content">
-<div class="tabbed-block">
-<p>Em cada repositório de serviço (<code>account-service</code>, <code>auth-service</code>, <code>exchange-service</code>,
-<code>gateway-service</code>): <em>Settings → Secrets and variables → Actions</em>:</p>
-<ul>
-<li><strong>Variable</strong> <code>DOCKERHUB_USERNAME</code> = seu usuário do Docker Hub</li>
-<li><strong>Secret</strong> <code>DOCKERHUB_TOKEN</code> = token criado em <em>Docker Hub → Account settings → Personal access tokens</em> (Read &amp; Write)</li>
-</ul>
-<p>Com o <code>gh</code>:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">for</span><span class="w"> </span>r<span class="w"> </span><span class="k">in</span><span class="w"> </span>account-service<span class="w"> </span>auth-service<span class="w"> </span>exchange-service<span class="w"> </span>gateway-service<span class="p">;</span><span class="w"> </span><span class="k">do</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span>gh<span class="w"> </span>variable<span class="w"> </span><span class="nb">set</span><span class="w"> </span>DOCKERHUB_USERNAME<span class="w"> </span>-b<span class="w"> </span><span class="s2">"&lt;usuario&gt;"</span><span class="w"> </span>-R<span class="w"> </span><span class="s2">"&lt;owner&gt;/</span><span class="nv">$r</span><span class="s2">"</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span>gh<span class="w"> </span>secret<span class="w"> </span><span class="nb">set</span><span class="w"> </span>DOCKERHUB_TOKEN<span class="w"> </span>-b<span class="w"> </span><span class="s2">"&lt;token&gt;"</span><span class="w"> </span>-R<span class="w"> </span><span class="s2">"&lt;owner&gt;/</span><span class="nv">$r</span><span class="s2">"</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span>gh<span class="w"> </span>workflow<span class="w"> </span>run<span class="w"> </span>ci.yml<span class="w"> </span>-R<span class="w"> </span><span class="s2">"&lt;owner&gt;/</span><span class="nv">$r</span><span class="s2">"</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="k">done</span>
+<h2 id="2-imagens-no-amazon-ecr">2. Imagens no Amazon ECR</h2>
+<p>Os nós são <strong>x86 (t3)</strong>, então a imagem precisa de <code>linux/amd64</code>; o script publica <code>amd64</code> +
+<code>arm64</code>. O ECR da própria conta é o registry padrão: a role dos nós já tem
+<code>AmazonEC2ContainerRegistryReadOnly</code> (sem <code>imagePullSecrets</code>) e não há limite de pulls.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>./scripts/build.sh<span class="w">            </span><span class="c1"># gera os target/*.jar</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>./scripts/push-images.sh<span class="w">      </span><span class="c1"># cria os repositórios &lt;serviço&gt;-service (scan on push) e faz o push</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>aws<span class="w"> </span>ecr<span class="w"> </span>describe-images<span class="w"> </span>--repository-name<span class="w"> </span>gateway-service<span class="w"> </span>--query<span class="w"> </span><span class="s1">'imageDetails[].imageTags'</span>
 </code></pre></div>
-</div>
-<div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>./scripts/build.sh<span class="w">                                   </span><span class="c1"># gera os target/*.jar</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>docker<span class="w"> </span>login
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="nv">DOCKERHUB_USERNAME</span><span class="o">=</span>&lt;usuario&gt;<span class="w"> </span>./scripts/push-images.sh
-</code></pre></div>
-</div>
-</div>
-</div>
+<p>Alternativa Docker Hub: <code>docker login &amp;&amp; DOCKERHUB_USERNAME=&lt;usuario&gt; ./scripts/push-images.sh</code>
+(e o mesmo <code>DOCKERHUB_USERNAME</code> no passo 5). Pelo CI: passo 7.</p>
 <h2 id="3-criar-vpc-cluster-eks-node-group">3. Criar VPC + cluster EKS + node group</h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>./aws/eks-create.sh<span class="w">            </span><span class="c1"># padrão: us-east-2, cluster eks-store, 2 x t3.medium</span>
 <a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="c1"># variáveis: AWS_REGION, CLUSTER, NODE_TYPE (ex.: t4g.medium), NODES</span>
@@ -1323,24 +1314,24 @@ precisa de <code>linux/amd64</code> — os dois caminhos abaixo publicam <code>a
 <a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>nodes<span class="w"> </span>-o<span class="w"> </span>wide<span class="w">          </span><span class="c1"># 2 nós Ready, IPs 192.168.128.x / 192.168.192.x (privados)</span>
 <a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>kubectl<span class="w"> </span>top<span class="w"> </span>nodes<span class="w">                  </span><span class="c1"># metrics-server ok (leva ~1 min)</span>
 </code></pre></div>
-<h2 id="4-opcional-banco-gerenciado-amazon-rds">4. (Opcional) Banco gerenciado — Amazon RDS</h2>
-<p>Por padrão o Postgres roda <strong>dentro do cluster</strong> (<code>k8s/postgres.yaml</code>, mais barato, sem
-persistência). Para usar o RDS (PaaS, backups, patching gerenciado):</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nv">DATABASE_PASSWORD</span><span class="o">=</span><span class="s1">'uma-senha-forte'</span><span class="w"> </span>./aws/rds-create.sh
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="c1"># imprime o DATABASE_HOST a usar no passo 5</span>
+<h2 id="4-banco-gerenciado-amazon-rds">4. Banco gerenciado — Amazon RDS</h2>
+<p>A página <em>EKS</em> do enunciado pede o banco no <strong>Amazon RDS ou DynamoDB</strong>; o mais barato que cumpre é
+o RDS PostgreSQL <code>db.t4g.micro</code> (≈ US$ 0,016/h). O Postgres <strong>dentro do cluster</strong>
+(<code>k8s/postgres.yaml</code>) fica só para kind/minikube.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">DATABASE_PASSWORD</span><span class="o">=</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-hex<span class="w"> </span><span class="m">16</span><span class="k">)</span><span class="w">   </span><span class="c1"># só no shell; nunca em arquivo versionado</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>./aws/rds-create.sh<span class="w">                                </span><span class="c1"># imprime o DATABASE_HOST a usar no passo 5</span>
 </code></pre></div>
 <p>Cria <code>db.t4g.micro</code> PostgreSQL 17, 20 GB gp3, Single-AZ, <strong>sem IP público</strong>, nas subnets privadas,
 com security group liberando a porta 5432 só para os nós do EKS.</p>
 <h2 id="5-implantar-a-plataforma">5. Implantar a plataforma</h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">DOCKERHUB_USERNAME</span><span class="o">=</span>&lt;usuario&gt;
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">JWT_SECRET_KEY</span><span class="o">=</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-base64<span class="w"> </span><span class="m">32</span><span class="k">)</span><span class="w">       </span><span class="c1"># guarde se quiser manter as sessões</span>
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>./k8s/deploy.sh
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="c1"># com RDS:</span>
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="c1"># DATABASE_HOST=&lt;endpoint&gt; DATABASE_PASSWORD='...' ./k8s/deploy.sh</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nv">DATABASE_HOST</span><span class="o">=</span>&lt;endpoint<span class="w"> </span><span class="k">do</span><span class="w"> </span>passo<span class="w"> </span><span class="m">4</span>&gt;<span class="w"> </span>./k8s/deploy.sh<span class="w">   </span><span class="c1"># usa o $DATABASE_PASSWORD exportado no passo 4</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="c1"># imagens no Docker Hub: DOCKERHUB_USERNAME=&lt;usuario&gt; ...; sem RDS (kind): omita DATABASE_HOST</span>
 </code></pre></div>
-<p>O script aplica <code>k8s/redis.yaml</code>, <code>k8s/postgres.yaml</code> (se não houver RDS) e o
+<p>O script troca o prefixo <code>DOCKERHUB_USER</code> dos manifests pelo registry do ECR da conta (descoberto
+na hora), aplica <code>k8s/redis.yaml</code>, <code>k8s/postgres.yaml</code> (só sem RDS) e o
 <code>api/&lt;serviço&gt;/k8s/k8s.yaml</code> de cada serviço (Secret, ConfigMap, Deployment, Service, HPA),
-sobrescreve os segredos de desenvolvimento e espera os rollouts. No fim imprime a URL do ELB.</p>
+sobrescreve os segredos de desenvolvimento (JWT aleatório, senha do RDS) e espera os rollouts.
+No fim imprime a URL do ELB.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods,svc,hpa
 <a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>svc<span class="w"> </span>gateway<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">'{.status.loadBalancer.ingress[0].hostname}'</span>
 </code></pre></div>
@@ -1356,46 +1347,75 @@ sobrescreve os segredos de desenvolvimento e espera os rollouts. No fim imprime 
 <code>curl</code>/k6/smoke test enviam o cookie explicitamente; <strong>um navegador só o reenvia por HTTPS</strong>
 (para isso: Ingress com ALB + certificado do ACM, seção 10).</p>
 </div>
-<h2 id="7-cicd-deploy-automatico-no-eks">7. CI/CD: deploy automático no EKS</h2>
-<p>O job <code>deploy</code> dos workflows faz <code>kubectl set image deployment/&lt;serviço&gt; &lt;serviço&gt;=&lt;imagem&gt;:&lt;sha&gt;</code>
-e <code>kubectl rollout status</code>. Ele só roda se a variável <code>EKS_CLUSTER</code> existir. Crie um usuário
-dedicado, com acesso mínimo:</p>
+<h2 id="7-cicd-imagem-no-ecr-e-deploy-automatico-no-eks">7. CI/CD: imagem no ECR e deploy automático no EKS</h2>
+<p>O job <code>image</code> publica no ECR (ou no Docker Hub) e o <code>deploy</code> faz
+<code>kubectl set image deployment/&lt;serviço&gt; &lt;serviço&gt;=&lt;imagem&gt;:&lt;sha&gt;</code> + <code>kubectl rollout status</code>.
+Sem chave fixa: o GitHub Actions troca o token <strong>OIDC</strong> do workflow por credenciais temporárias de
+uma role que só aceita os repositórios de serviço na branch <code>main</code>.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="nv">ACCOUNT</span><span class="o">=</span><span class="k">$(</span>aws<span class="w"> </span>sts<span class="w"> </span>get-caller-identity<span class="w"> </span>--query<span class="w"> </span>Account<span class="w"> </span>--output<span class="w"> </span>text<span class="k">)</span>
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>aws<span class="w"> </span>iam<span class="w"> </span>create-user<span class="w"> </span>--user-name<span class="w"> </span>github-deployer
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>aws<span class="w"> </span>iam<span class="w"> </span>put-user-policy<span class="w"> </span>--user-name<span class="w"> </span>github-deployer<span class="w"> </span>--policy-name<span class="w"> </span>eks-describe<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">  </span>--policy-document<span class="w"> </span><span class="s1">'{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":"eks:DescribeCluster","Resource":"*"}]}'</span>
-<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>aws<span class="w"> </span>iam<span class="w"> </span>create-access-key<span class="w"> </span>--user-name<span class="w"> </span>github-deployer<span class="w">          </span><span class="c1"># anote AccessKeyId/SecretAccessKey</span>
-<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>aws<span class="w"> </span>eks<span class="w"> </span>create-access-entry<span class="w"> </span>--cluster-name<span class="w"> </span>eks-store<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="w">  </span>--principal-arn<span class="w"> </span>arn:aws:iam::<span class="nv">$ACCOUNT</span>:user/github-deployer
-<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>aws<span class="w"> </span>eks<span class="w"> </span>associate-access-policy<span class="w"> </span>--cluster-name<span class="w"> </span>eks-store<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="w">  </span>--principal-arn<span class="w"> </span>arn:aws:iam::<span class="nv">$ACCOUNT</span>:user/github-deployer<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="w">  </span>--policy-arn<span class="w"> </span>arn:aws:eks::aws:cluster-access-policy/AmazonEKSEditPolicy<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="w">  </span>--access-scope<span class="w"> </span><span class="nv">type</span><span class="o">=</span>namespace,namespaces<span class="o">=</span>default
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>aws<span class="w"> </span>iam<span class="w"> </span>create-open-id-connect-provider<span class="w"> </span>--url<span class="w"> </span>https://token.actions.githubusercontent.com<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">  </span>--client-id-list<span class="w"> </span>sts.amazonaws.com
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>aws<span class="w"> </span>iam<span class="w"> </span>create-role<span class="w"> </span>--role-name<span class="w"> </span>github-actions-store<span class="w"> </span>--assume-role-policy-document<span class="w"> </span><span class="s1">'{</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="s1">  "Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":"sts:AssumeRoleWithWebIdentity",</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="s1">  "Principal":{"Federated":"arn:aws:iam::'</span><span class="s2">"</span><span class="nv">$ACCOUNT</span><span class="s2">"</span><span class="s1">':oidc-provider/token.actions.githubusercontent.com"},</span>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="s1">  "Condition":{"StringEquals":{"token.actions.githubusercontent.com:aud":"sts.amazonaws.com"},</span>
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="s1">               "StringLike":{"token.actions.githubusercontent.com:sub":"repo:&lt;owner&gt;/*-service:ref:refs/heads/main"}}}]}'</span>
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>aws<span class="w"> </span>iam<span class="w"> </span>attach-role-policy<span class="w"> </span>--role-name<span class="w"> </span>github-actions-store<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="w">  </span>--policy-arn<span class="w"> </span>arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser
+<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>aws<span class="w"> </span>iam<span class="w"> </span>put-role-policy<span class="w"> </span>--role-name<span class="w"> </span>github-actions-store<span class="w"> </span>--policy-name<span class="w"> </span>eks-describe<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="w">  </span>--policy-document<span class="w"> </span><span class="s1">'{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":"eks:DescribeCluster","Resource":"*"}]}'</span>
+<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a>aws<span class="w"> </span>eks<span class="w"> </span>create-access-entry<span class="w"> </span>--cluster-name<span class="w"> </span>eks-store<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a><span class="w">  </span>--principal-arn<span class="w"> </span><span class="s2">"arn:aws:iam::</span><span class="nv">$ACCOUNT</span><span class="s2">:role/github-actions-store"</span>
+<a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a>aws<span class="w"> </span>eks<span class="w"> </span>associate-access-policy<span class="w"> </span>--cluster-name<span class="w"> </span>eks-store<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a><span class="w">  </span>--principal-arn<span class="w"> </span><span class="s2">"arn:aws:iam::</span><span class="nv">$ACCOUNT</span><span class="s2">:role/github-actions-store"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a><span class="w">  </span>--policy-arn<span class="w"> </span>arn:aws:eks::aws:cluster-access-policy/AmazonEKSEditPolicy<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-18" name="__codelineno-11-18" href="#__codelineno-11-18"></a><span class="w">  </span>--access-scope<span class="w"> </span><span class="nv">type</span><span class="o">=</span>namespace,namespaces<span class="o">=</span>default
+<a id="__codelineno-11-19" name="__codelineno-11-19" href="#__codelineno-11-19"></a>
+<a id="__codelineno-11-20" name="__codelineno-11-20" href="#__codelineno-11-20"></a><span class="k">for</span><span class="w"> </span>r<span class="w"> </span><span class="k">in</span><span class="w"> </span>account-service<span class="w"> </span>auth-service<span class="w"> </span>exchange-service<span class="w"> </span>gateway-service<span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<a id="__codelineno-11-21" name="__codelineno-11-21" href="#__codelineno-11-21"></a><span class="w">  </span>gh<span class="w"> </span>variable<span class="w"> </span><span class="nb">set</span><span class="w"> </span>AWS_ECR<span class="w"> </span>-b<span class="w"> </span><span class="nb">true</span><span class="w"> </span>-R<span class="w"> </span><span class="s2">"&lt;owner&gt;/</span><span class="nv">$r</span><span class="s2">"</span>
+<a id="__codelineno-11-22" name="__codelineno-11-22" href="#__codelineno-11-22"></a><span class="w">  </span>gh<span class="w"> </span>variable<span class="w"> </span><span class="nb">set</span><span class="w"> </span>EKS_CLUSTER<span class="w"> </span>-b<span class="w"> </span>eks-store<span class="w"> </span>-R<span class="w"> </span><span class="s2">"&lt;owner&gt;/</span><span class="nv">$r</span><span class="s2">"</span>
+<a id="__codelineno-11-23" name="__codelineno-11-23" href="#__codelineno-11-23"></a><span class="w">  </span>gh<span class="w"> </span>secret<span class="w"> </span><span class="nb">set</span><span class="w"> </span>AWS_ROLE_ARN<span class="w"> </span>-b<span class="w"> </span><span class="s2">"arn:aws:iam::</span><span class="nv">$ACCOUNT</span><span class="s2">:role/github-actions-store"</span><span class="w"> </span>-R<span class="w"> </span><span class="s2">"&lt;owner&gt;/</span><span class="nv">$r</span><span class="s2">"</span>
+<a id="__codelineno-11-24" name="__codelineno-11-24" href="#__codelineno-11-24"></a><span class="k">done</span>
 </code></pre></div>
-<p>Cadastre nos 4 repositórios de serviço:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="k">for</span><span class="w"> </span>r<span class="w"> </span><span class="k">in</span><span class="w"> </span>account-service<span class="w"> </span>auth-service<span class="w"> </span>exchange-service<span class="w"> </span>gateway-service<span class="p">;</span><span class="w"> </span><span class="k">do</span>
-<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">  </span>gh<span class="w"> </span>variable<span class="w"> </span><span class="nb">set</span><span class="w"> </span>EKS_CLUSTER<span class="w"> </span>-b<span class="w"> </span>eks-store<span class="w"> </span>-R<span class="w"> </span><span class="s2">"&lt;owner&gt;/</span><span class="nv">$r</span><span class="s2">"</span>
-<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">  </span>gh<span class="w"> </span>variable<span class="w"> </span><span class="nb">set</span><span class="w"> </span>AWS_REGION<span class="w"> </span>-b<span class="w"> </span>us-east-2<span class="w"> </span>-R<span class="w"> </span><span class="s2">"&lt;owner&gt;/</span><span class="nv">$r</span><span class="s2">"</span>
-<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">  </span>gh<span class="w"> </span>secret<span class="w"> </span><span class="nb">set</span><span class="w"> </span>AWS_ACCESS_KEY_ID<span class="w"> </span>-b<span class="w"> </span><span class="s2">"&lt;AccessKeyId&gt;"</span><span class="w"> </span>-R<span class="w"> </span><span class="s2">"&lt;owner&gt;/</span><span class="nv">$r</span><span class="s2">"</span>
-<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">  </span>gh<span class="w"> </span>secret<span class="w"> </span><span class="nb">set</span><span class="w"> </span>AWS_SECRET_ACCESS_KEY<span class="w"> </span>-b<span class="w"> </span><span class="s2">"&lt;SecretAccessKey&gt;"</span><span class="w"> </span>-R<span class="w"> </span><span class="s2">"&lt;owner&gt;/</span><span class="nv">$r</span><span class="s2">"</span>
-<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="k">done</span>
-</code></pre></div>
-<p>Teste: um commit em <code>main</code> de qualquer serviço → Actions: <strong>Build &amp; Test → Docker Hub → Deploy EKS</strong>.</p>
+<p>O ARN vai como <strong>secret</strong> (mascarado nos logs) e o workflow usa <code>mask-aws-account-id: true</code>, então o
+ID da conta não aparece nos logs públicos. Teste: um commit em <code>main</code> de qualquer serviço →
+Actions: <strong>Build &amp; Test → Imagem → Deploy EKS</strong>.</p>
 <h2 id="8-teste-de-carga-e-video-do-hpa">8. Teste de carga e vídeo do HPA</h2>
 <p>Ver <code>load-test/README.md</code> (página <em>Teste de carga</em> do site) — 3 terminais (HPA, pods, gerador de carga
 busybox do enunciado) e a alternativa com k6.</p>
 <h2 id="9-teardown-obrigatorio">9. Teardown (obrigatório)</h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>./aws/eks-teardown.sh
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>./aws/eks-teardown.sh
 </code></pre></div>
 <p>Remove, nesta ordem: Service <code>LoadBalancer</code>/Ingress (libera o ELB) → RDS (se houver) →
-node group → cluster → stack da VPC (subnets, NAT Gateways, Elastic IPs). As roles IAM ficam
-(não custam nada). Depois confira no console, região <strong>us-east-2</strong>:</p>
+node group → cluster → stack da VPC (subnets, NAT Gateways, Elastic IPs) → repositórios do ECR.
+As roles IAM ficam (não custam nada). Antes de começar, o script aponta o <code>kubectl</code> para o
+<code>eks-store</code> (<code>aws eks update-kubeconfig</code>), para não apagar nada de outro cluster.</p>
+<p><strong>Teardown de segurança</strong> (caso alguém esqueça o cluster ligado): agende ao terminar o deploy,
+na pasta do repositório. Em 8 h ele roda o <code>eks-teardown.sh</code>, a menos que exista <code>~/KEEP_EKS</code>.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>perl<span class="w"> </span>-MPOSIX<span class="w"> </span>-e<span class="w"> </span><span class="s1">'POSIX::setsid(); exec @ARGV'</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">  </span>nohup<span class="w"> </span>caffeinate<span class="w"> </span>-i<span class="w"> </span>sh<span class="w"> </span>-c<span class="w"> </span><span class="s1">'sleep 28800; [ -f ~/KEEP_EKS ] || ./aws/eks-teardown.sh'</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">  </span>&gt;<span class="w"> </span>~/eks-teardown.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span>&lt;<span class="w"> </span>/dev/null<span class="w"> </span><span class="p">&amp;</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="nv">$!</span><span class="w"> </span>&gt;<span class="w"> </span>~/eks-teardown.pid
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>ps<span class="w"> </span>-o<span class="w"> </span>pid,pgid,command<span class="w"> </span>-g<span class="w"> </span><span class="s2">"</span><span class="k">$(</span>cat<span class="w"> </span>~/eks-teardown.pid<span class="k">)</span><span class="s2">"</span><span class="w">    </span><span class="c1"># sh, caffeinate e sleep no mesmo grupo</span>
+</code></pre></div>
+<ul>
+<li><strong>Manter o cluster</strong>: <code>touch ~/KEEP_EKS</code>. <strong>Cancelar o agendamento</strong>:
+  <code>kill -- -$(cat ~/eks-teardown.pid)</code> (o <code>-</code> mata o grupo todo; matar só o <code>sleep</code> dispararia o
+  teardown na hora).</li>
+<li><code>setsid</code> põe o processo numa sessão própria (sobrevive ao fechar o terminal);
+  <code>caffeinate -i</code> impede o repouso por inatividade, mas <strong>fechar a tampa na bateria suspende o
+  Mac</strong> e atrasa o relógio do <code>sleep</code>.</li>
+<li>As credenciais precisam valer na hora: com SSO, as do papel ficam em cache por até 12 h
+  (<code>jq -r .Credentials.Expiration ~/.aws/cli/cache/*.json</code>). Depois disso só com <code>aws sso login</code>.</li>
+<li>Log em <code>~/eks-teardown.log</code>.</li>
+</ul>
+<p>Depois confira no console, região <strong>us-east-2</strong>:</p>
 <ul class="task-list">
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> EKS → Clusters: vazio</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> EC2 → Instances, Load Balancers, NAT Gateways, Elastic IPs, Volumes: vazios</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> RDS → Databases: vazio</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> CloudFormation → Stacks: sem <code>eks-store-vpc</code></li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> (opcional) IAM → <code>github-deployer</code> → desative a access key</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> ECR → Repositories: vazio</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> (opcional) IAM → role <code>github-actions-store</code> e o provedor OIDC do GitHub</li>
 </ul>
 <h2 id="10-opcional-ingress-com-alb-e-https">10. (Opcional) Ingress com ALB e HTTPS</h2>
 <p>O padrão do projeto é o <code>Service</code> <code>type: LoadBalancer</code> do gateway (um Classic Load Balancer, sem
@@ -1436,7 +1456,12 @@ teardown (o script já faz isso).</p>
 <tr>
 <td><code>ImagePullBackOff</code></td>
 <td>nome/tag errado, imagem só <code>arm64</code>, limite de pulls do Docker Hub</td>
-<td>confira <code>DOCKERHUB_USERNAME</code>, publique <code>linux/amd64</code>; use <code>imagePullSecrets</code> ou ECR</td>
+<td><code>kubectl describe pod</code>; publique <code>linux/amd64</code> no ECR (<code>./scripts/push-images.sh</code>)</td>
+</tr>
+<tr>
+<td><code>ExpiredToken</code> / <code>kubectl</code> pede login</td>
+<td>sessão SSO expirou</td>
+<td><code>aws sso login</code></td>
 </tr>
 <tr>
 <td>HPA <code>cpu: &lt;unknown&gt;/50%</code></td>
