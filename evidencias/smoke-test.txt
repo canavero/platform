@@ -1,3 +1,28 @@
+$ kubectl create secret generic exchange-secrets --from-file=EXCHANGE_PROVIDER_TOKEN=$HOME/.awesomeapi_key   # a chave fica só no Secret do cluster
+secret/exchange-secrets created
+$ kubectl rollout restart deployment/exchange && kubectl rollout status deployment/exchange
+deployment "exchange" successfully rolled out
+
+$ ./scripts/smoke-test.sh http://a0fe1d39fd35640c4b0de61fe105bdb5-64525269.us-east-2.elb.amazonaws.com   # 2026-11-15 23:21 UTC, com a API key da AwesomeAPI
+✅ GET /health-check (aberto) -> 200
+✅ GET /info (aberto) -> 200
+✅ POST /auth/register -> 200
+✅ POST /auth/register (email repetido) -> 409
+✅ POST /auth/login (senha errada) -> 401
+✅ POST /auth/login devolve cookie JWT -> yes
+✅ GET /accounts sem cookie -> 401
+✅ GET /accounts com token forjado -> 401
+✅ GET /auth/me -> smoke.1794784881@insper.edu.br
+✅ GET /accounts/{id} (1ª vez: banco) -> 200
+✅ GET /accounts/{id} (2ª vez: cache Redis) -> 200
+   exchange: {"sell":5.668,"buy":5.6666,"date":"2026-11-13 18:30:13","id-account":"f88f9973-a69a-4237-b783-da625bebb859"}
+✅ GET /exchanges/USD/BRL tem sell/buy -> yes
+✅ id-account vem do token (header forjado descartado) -> f88f9973-a69a-4237-b783-da625bebb859
+✅ GET /exchanges/XXX/YYY (par inválido) -> 404
+SMOKE TEST OK
+
+# Antes da API key (o mesmo ELB): a AwesomeAPI devolvia 429 aos IPs da AWS, e o exchange respondia 503
+
 $ ./scripts/smoke-test.sh http://a0fe1d39fd35640c4b0de61fe105bdb5-64525269.us-east-2.elb.amazonaws.com   # 2026-11-15 22:34 UTC, exchange com suporte a API key (sem chave configurada)
 ✅ GET /health-check (aberto) -> 200
 ✅ GET /info (aberto) -> 200

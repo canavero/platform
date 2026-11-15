@@ -1476,7 +1476,8 @@ tempo ligado. Por isso o teardown automático de segurança caiu de 8 h para <st
 </table>
 <p>A troca foi feita com o cluster no ar: o node group Spot subiu ao lado do antigo, o EKS drenou
 os pods para ele, e o ELB seguiu respondendo 200. O smoke test pelo ELB deu os mesmos
-<strong>11/14</strong> de antes (as 3 falhas são do câmbio, por falta da API key da AwesomeAPI).</p>
+<strong>11/14</strong> de antes (as 3 falhas eram do câmbio, por falta da API key da AwesomeAPI; com a chave
+no Secret, <strong>14/14</strong>).</p>
 <p><strong>Avaliado e não aplicado:</strong></p>
 <table>
 <thead>
