@@ -1483,7 +1483,7 @@ tempo ligado. Por isso o teardown automático de segurança caiu de 8 h para <st
 <td>8 h</td>
 <td><strong>3 h</strong></td>
 <td style="text-align: right;">—</td>
-<td style="text-align: right;">pior caso de US$ 3,25 para US$ 1,15</td>
+<td style="text-align: right;">pior caso planejado de US$ 3,25 para US$ 1,15 (real: ≈ US$ 1,24, ver abaixo)</td>
 </tr>
 <tr>
 <td><code>eks-create.sh</code> cria o cluster com <code>--upgrade-policy supportType=STANDARD</code></td>
@@ -1644,31 +1644,39 @@ no Secret, <strong>14/14</strong>).</p>
 <td style="text-align: right;">≈ 0,07</td>
 </tr>
 <tr>
-<td>23:00 → 01:43 (16/11)</td>
-<td>A otimizado, até o teardown automático (pior caso)</td>
+<td>23:00 → 02:18 (16/11)</td>
+<td>A otimizado; o teardown automático agendado para 01:43 não disparou</td>
 <td style="text-align: right;">0,211</td>
-<td style="text-align: right;">2,7</td>
-<td style="text-align: right;">≈ 0,58</td>
+<td style="text-align: right;">3,3</td>
+<td style="text-align: right;">≈ 0,70</td>
 </tr>
 <tr>
-<td>01:43 → ~02:05</td>
-<td>teardown (recursos sendo apagados)</td>
+<td>02:18 → 02:30</td>
+<td>teardown pelo AWS CloudShell (LB → node group → cluster → VPC → ECR)</td>
 <td style="text-align: right;">≈ 0,15</td>
-<td style="text-align: right;">0,4</td>
-<td style="text-align: right;">≈ 0,05</td>
+<td style="text-align: right;">0,2</td>
+<td style="text-align: right;">≈ 0,03</td>
 </tr>
 <tr>
-<td><strong>Total (pior caso)</strong></td>
+<td><strong>Total</strong></td>
 <td></td>
 <td style="text-align: right;"></td>
-<td style="text-align: right;"><strong>≈ 4,6</strong></td>
-<td style="text-align: right;"><strong>≈ US$ 1,15</strong></td>
+<td style="text-align: right;"><strong>≈ 5,0</strong></td>
+<td style="text-align: right;"><strong>≈ US$ 1,24</strong></td>
 </tr>
 </tbody>
 </table>
-<p>Antes da otimização, o pior caso (tudo ligado até o teardown de 8 h) era <strong>≈ US$ 3,25</strong>. Se o
-cluster for destruído logo depois da gravação, o total fica abaixo de US$ 1. Some centavos de
-NAT por GB (pull das imagens, ≈ 2 GB × 0,045) e as chamadas ao Cost Explorer (US$ 0,01 cada).</p>
+<p>Antes da otimização, o pior caso (tudo ligado até o teardown de 8 h) era <strong>≈ US$ 3,25</strong>.</p>
+<div class="admonition warning">
+<p class="admonition-title">O teardown automático não disparou</p>
+<p>O agendamento de segurança rodava no Mac de um integrante e não executou às 01:43 UTC. Às 01:52
+conferimos de fora que o Load Balancer ainda respondia <code>200</code>, entramos na conta pelo AWS access
+portal e rodamos os passos do <code>aws/eks-teardown.sh</code> no <strong>AWS CloudShell</strong> (02:18–02:30 UTC). Em
+seguida, uma varredura em <strong>todas as regiões</strong> (EKS, EC2, NAT, Load Balancers, IPs elásticos, RDS)
+voltou vazia. O atraso custou ≈ US$ 0,12 a mais. Lição: o teardown automático precisa rodar num
+lugar que não dorme (por exemplo, um <em>AWS Budget</em> com ação ou uma regra do EventBridge na própria
+conta), não num notebook. Evidência: <a href="https://github.com/EuMiguelll/Projeto-PMA/blob/main/docs/evidencias/teardown.txt"><code>docs/evidencias/teardown.txt</code></a>.</p>
+</div>
 <p><strong>Cost Explorer</strong>: está habilitado na conta e mostrava <strong>US$ 0,00</strong> de 01/11 a 15/11 (consultado
 às 23:05 UTC de 15/11; nenhum recurso existia antes desta sessão). A AWS publica os custos com
 ~24 h de atraso, então o valor desta sessão aparece a partir de 16–17/11:</p>

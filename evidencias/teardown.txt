@@ -1,0 +1,23 @@
+# Teardown do ambiente EKS — 16/11/2026 (UTC)
+# O teardown automático agendado para 01:43 não disparou. Conferência de fora e destruição manual
+# pelo AWS CloudShell (papel AdministratorAccess, us-east-2). IDs da conta, ARNs e IPs omitidos.
+
+01:52  curl http://<elb>/info                  -> 200 (gateway ainda no ar)
+02:16  inventário (us-east-2)
+       eks list-clusters                       -> eks-store
+       eks list-nodegroups                     -> eks-store-spot (2 x t3.medium, 2 x EBS 20 GB)
+       elb describe-load-balancers             -> 1 Classic LB (Service gateway)
+       ec2 describe-nat-gateways               -> 1 NAT Gateway + 1 Elastic IP
+       cloudformation list-stacks              -> eks-store-vpc
+       ecr describe-repositories               -> account-service auth-service exchange-service gateway-service
+       rds describe-db-instances               -> (nenhum)
+02:18  kubectl delete svc gateway              -> service "gateway" deleted (libera o ELB)
+02:19  elb describe-load-balancers             -> 0
+02:19  eks delete-nodegroup eks-store-spot     -> DELETING ... deleted
+       eks delete-cluster eks-store            -> DELETING ... deleted
+       cloudformation delete-stack eks-store-vpc (VPC, subnets, NAT, EIP) ... deleted
+       ecr delete-repository --force x 4       -> account-service auth-service exchange-service gateway-service
+02:30  TEARDOWN_DONE
+02:31  inventário (us-east-2): EKS, ELB, ELBv2, NAT, EIP, stack, ECR, RDS, EC2, EBS -> todos vazios
+02:33  varredura em todas as regiões: EKS, EC2 em execução, NAT, ELB, ELBv2, EIP, RDS -> vazio
+       (as roles IAM eksClusterRole/eksNodeRole ficam: não geram custo)
