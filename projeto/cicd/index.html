@@ -1287,7 +1287,12 @@ tem <code>AmazonEC2ContainerRegistryPowerUser</code> + <code>eks:DescribeCluster
 atualizar Deployments, sem poder administrar o cluster. Nenhuma chave de longa duração existe,
 e o ID da conta não vai para arquivos nem para os logs públicos (<code>mask-aws-account-id: true</code>).</p>
 <h2 id="execucoes-no-github-actions">Execuções no GitHub Actions</h2>
-<p>Os workflows rodam no GitHub a cada push (15/11/2026, 23:01 UTC):</p>
+<p>Os workflows rodam no GitHub a cada push (15/11/2026, 23:01 UTC). O repositório principal tem
+duas cópias idênticas: <a href="https://github.com/canavero/platform/actions"><code>canavero/platform</code></a>, onde o
+E2E e o deploy das docs rodam, e <a href="https://github.com/EuMiguelll/Projeto-PMA"><code>EuMiguelll/Projeto-PMA</code></a>,
+a entrega individual do Miguel, que tem os mesmos arquivos em <code>.github/workflows/</code> mas o Actions
+desligado (a conta pessoal está com cobrança bloqueada no GitHub). Ali o site é publicado pela
+branch <code>gh-pages</code> (<code>mkdocs gh-deploy</code>).</p>
 <table>
 <thead>
 <tr>

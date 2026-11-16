@@ -821,10 +821,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#como-foi-usado" class="md-nav__link">
+  <a href="#o-que-foi-nosso" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Como foi usado
+        O que foi nosso
       
     </span>
   </a>
@@ -832,10 +832,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#erros-que-a-propria-verificacao-pegou" class="md-nav__link">
+  <a href="#o-que-a-ia-fez-e-como-verificamos" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Erros que a própria verificação pegou
+        O que a IA fez e como verificamos
       
     </span>
   </a>
@@ -843,10 +843,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#responsabilidade-do-grupo" class="md-nav__link">
+  <a href="#erros-que-a-verificacao-pegou" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Responsabilidade do grupo
+        Erros que a verificação pegou
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#responsabilidade" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Responsabilidade
       
     </span>
   </a>
@@ -888,10 +899,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#como-foi-usado" class="md-nav__link">
+  <a href="#o-que-foi-nosso" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Como foi usado
+        O que foi nosso
       
     </span>
   </a>
@@ -899,10 +910,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#erros-que-a-propria-verificacao-pegou" class="md-nav__link">
+  <a href="#o-que-a-ia-fez-e-como-verificamos" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Erros que a própria verificação pegou
+        O que a IA fez e como verificamos
       
     </span>
   </a>
@@ -910,10 +921,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#responsabilidade-do-grupo" class="md-nav__link">
+  <a href="#erros-que-a-verificacao-pegou" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Responsabilidade do grupo
+        Erros que a verificação pegou
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#responsabilidade" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Responsabilidade
       
     </span>
   </a>
@@ -946,23 +968,65 @@
 
 
 <h1 id="uso-de-ia">Uso de IA</h1>
-<p>O professor liberou o uso completo de IA neste projeto. <strong>Todo o código, os scripts e esta
-documentação foram gerados com o <a href="https://claude.com/claude-code">Claude Code</a></strong> (agente de
-programação da Anthropic, modelo Claude Opus), a partir de um único pedido com o escopo da
-entrega e as regras de trabalho.</p>
-<h2 id="como-foi-usado">Como foi usado</h2>
+<p>A página do projeto permite usar IA na implementação e pede que o grupo documente o que foi
+feito com ela e o que foi feito pelos integrantes. Neste projeto, a divisão foi esta:</p>
+<ul>
+<li><strong>Nós dois (Miguel Damásio e Enzo Canavero)</strong> idealizamos o projeto, definimos a arquitetura,
+  dividimos as tarefas, coordenamos o trabalho e atuamos como <strong>arquitetos do sistema e gestores
+  dos agentes de IA</strong>: decidimos o que construir, em que ordem, com quais regras, e revisamos e
+  validamos cada entrega antes de seguir.</li>
+<li><strong>A IA</strong> (<a href="https://claude.com/claude-code">Claude Code</a>, agente de programação da Anthropic)
+  fez o <strong>trabalho bruto</strong>: escreveu o código dos 7 módulos, os testes, os <code>Dockerfile</code>, os
+  manifests, os scripts, os rascunhos desta documentação e a montagem dos vídeos.</li>
+</ul>
+<h2 id="o-que-foi-nosso">O que foi nosso</h2>
+<table>
+<thead>
+<tr>
+<th>Frente</th>
+<th>Decisões e trabalho da dupla</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Ideação e escopo</strong></td>
+<td>API Store com os 4 microsserviços pedidos (gateway, auth, account, exchange), padrão interface + serviço da disciplina, repositório principal com submódulos</td>
+</tr>
+<tr>
+<td><strong>Arquitetura</strong></td>
+<td>gateway como única porta de entrada; JWT validado no gateway (o cliente nunca manda o <code>id-account</code>); Postgres para contas; Redis compartilhado para cache e rate limiting; circuit breaker nas chamadas síncronas; HPA por serviço</td>
+</tr>
+<tr>
+<td><strong>Divisão de tarefas</strong></td>
+<td>cada integrante responde por 2 bottlenecks: <strong>Miguel</strong> por rate limiting e observabilidade, <strong>Enzo</strong> por cache e circuit breaker (<a href="../projeto/bottlenecks/#destaques-por-integrante">destaques</a>). <strong>Enzo</strong> conduziu o deploy real no EKS e a otimização de custos; <strong>Miguel</strong> conduziu a entrega final: E2E do CI, vídeos, apresentação, checklist da rubrica e revisão da documentação</td>
+</tr>
+<tr>
+<td><strong>Gestão dos agentes</strong></td>
+<td>escrevemos os pedidos e as regras de trabalho, aprovamos cada passo que gastava AWS ou publicava algo, e checamos as saídas reais (testes, smoke test, HPA, custos) antes de aceitar</td>
+</tr>
+<tr>
+<td><strong>Custos e segurança</strong></td>
+<td>decidimos usar o mínimo de AWS (nós Spot, 1 NAT, Postgres no cluster, teardown automático, vídeo do HPA gravado localmente) e as regras para nada da conta ir ao GitHub</td>
+</tr>
+<tr>
+<td><strong>Revisão</strong></td>
+<td>conferimos o código, a documentação, os números de custo e os vídeos, e respondemos pelo projeto inteiro na prova oral</td>
+</tr>
+</tbody>
+</table>
+<h2 id="o-que-a-ia-fez-e-como-verificamos">O que a IA fez e como verificamos</h2>
 <table>
 <thead>
 <tr>
 <th>Etapa</th>
 <th>O que a IA fez</th>
-<th>Como foi verificado</th>
+<th>Como verificamos</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>Leitura do enunciado</td>
-<td>leu as páginas do projeto, de bottlenecks, os hands-on e o template de documentação</td>
+<td>resumiu as páginas do projeto, de bottlenecks, os hands-on e o template de documentação</td>
 <td>conferência das versões e convenções (Spring Boot 4.1.1, Spring Cloud 2025.1.3, nomes e endpoints)</td>
 </tr>
 <tr>
@@ -988,12 +1052,12 @@ entrega e as regras de trabalho.</p>
 <tr>
 <td>Custos</td>
 <td>consultou a AWS Price List e montou os cenários</td>
-<td>valores conferidos nos arquivos oficiais de preço</td>
+<td>valores conferidos nos arquivos oficiais de preço e no AWS Pricing Calculator</td>
 </tr>
 <tr>
 <td>Documentação</td>
-<td>este site, roteiro do vídeo, checklist da rubrica e slides</td>
-<td><code>mkdocs build --strict</code></td>
+<td>rascunhos deste site, do roteiro do vídeo, do checklist da rubrica e dos slides</td>
+<td>revisão nossa e <code>mkdocs build --strict</code></td>
 </tr>
 <tr>
 <td>Vídeos e slides</td>
@@ -1002,11 +1066,11 @@ entrega e as regras de trabalho.</p>
 </tr>
 </tbody>
 </table>
-<p>Regras dadas ao agente e seguidas: não criar recursos pagos na AWS, não publicar no GitHub sem
-confirmar a conta, e poupar o computador (builds um de cada vez, checando carga e memória
-antes de cada build pesado).</p>
-<h2 id="erros-que-a-propria-verificacao-pegou">Erros que a própria verificação pegou</h2>
-<p>A IA errou e só percebeu porque tudo foi executado, não apenas escrito:</p>
+<p>Regras que demos aos agentes: não criar recursos pagos na AWS sem o nosso aval e sem teardown
+planejado, nunca versionar nada que identifique a conta (ID, ARNs, chaves), não publicar no
+GitHub sem confirmar a conta, e poupar o computador (builds um de cada vez).</p>
+<h2 id="erros-que-a-verificacao-pegou">Erros que a verificação pegou</h2>
+<p>A IA errou, e os erros só apareceram porque mandamos executar tudo, não apenas escrever:</p>
 <ul>
 <li>o smoke test mandava JSON quebrado por causa da <em>brace expansion</em> do bash 3.2 do macOS;</li>
 <li>uma checagem de segurança passava por engano (<code>null == null</code>) e foi reescrita;</li>
@@ -1014,18 +1078,15 @@ antes de cada build pesado).</p>
   serviços — invisível no Docker Compose, só apareceu no teste em kind;</li>
 <li>uma variável de zsh (<code>$img:latest</code>) virou <code>atest</code> por causa do modificador <code>:l</code>;</li>
 <li>no EKS, a AwesomeAPI devolveu <code>429 QuotaExceeded</code> para os IPs dos NAT Gateways (do Mac, 200):
-  só o deploy real mostrou que o exchange precisa de API key na nuvem.</li>
+  só o deploy real mostrou que o exchange precisa de API key na nuvem;</li>
+<li>o E2E do GitHub Actions falhava pelo mesmo <code>429</code>, por um motivo externo ao código: trocamos a
+  API real por um stub no CI.</li>
 </ul>
-<h2 id="responsabilidade-do-grupo">Responsabilidade do grupo</h2>
-<p>Usar IA não tira a responsabilidade de entender e defender o projeto. Antes da entrega, o grupo
-deve:</p>
-<ul class="task-list">
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> ler o código de cada serviço e saber explicar o fluxo JWT (login → cookie → <code>/auth/solve</code> → <code>id-account</code>);</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> saber justificar cada bottleneck e os números medidos;</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> reler o <a href="../projeto/runbook/">AWS Runbook</a> e as evidências do deploy real, e gravar os vídeos;</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> revisar os custos no AWS Pricing Calculator e colar o link da estimativa;</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> completar as <a href="../atividades/">atividades</a> feitas em aula que não estão aqui.</li>
-</ul>
+<h2 id="responsabilidade">Responsabilidade</h2>
+<p>Usar IA não tira de nós a responsabilidade de entender e defender o projeto. Os dois sabem
+explicar o fluxo do JWT (login → cookie → <code>/auth/solve</code> → <code>id-account</code>), justificar cada
+bottleneck com os números medidos, reproduzir o deploy pelo <a href="../projeto/runbook/">Runbook</a> e
+defender as escolhas de custo.</p>
 
 
 
