@@ -1,3 +1,22 @@
+$ ./scripts/smoke-test.sh   # 2026-11-16 15:40 UTC, docker compose no Mac, exchange no PTAX do BACEN (sem API key)
+✅ GET /health-check (aberto) -> 200
+✅ GET /info (aberto) -> 200
+✅ POST /auth/register -> 200
+✅ POST /auth/register (email repetido) -> 409
+✅ POST /auth/login (senha errada) -> 401
+✅ POST /auth/login devolve cookie JWT -> yes
+✅ GET /accounts sem cookie -> 401
+✅ GET /accounts com token forjado -> 401
+✅ GET /auth/me -> smoke.<ts>@insper.edu.br
+✅ GET /accounts/{id} (1ª vez: banco) -> 200
+✅ GET /accounts/{id} (2ª vez: cache Redis) -> 200
+   exchange: {"sell":5.7525,"buy":5.7519,"date":"2026-11-16 12:06:13.954181","id-account":"22b629f9-5b80-4302-8dd7-375f25a92694"}
+✅ GET /exchanges/USD/BRL tem sell/buy -> yes
+✅ id-account vem do token (header forjado descartado) -> 22b629f9-5b80-4302-8dd7-375f25a92694
+✅ GET /exchanges/XXX/YYY (par inválido) -> 404
+SMOKE TEST OK
+
+# Registros anteriores (EKS, exchange ainda na AwesomeAPI):
 $ kubectl create secret generic exchange-secrets --from-file=EXCHANGE_PROVIDER_TOKEN=$HOME/.awesomeapi_key   # a chave fica só no Secret do cluster
 secret/exchange-secrets created
 $ kubectl rollout restart deployment/exchange && kubectl rollout status deployment/exchange

@@ -1100,7 +1100,7 @@ são das execuções reais):</p>
 <tr>
 <td>2</td>
 <td><strong>Resiliência</strong> (circuit breaker + retry)</td>
-<td>auth → account, exchange → AwesomeAPI</td>
+<td>auth → account, exchange → BACEN</td>
 <td>Resilience4j</td>
 <td>circuito <code>OPEN</code>, 503 em ~5 ms, volta a <code>CLOSED</code></td>
 </tr>
@@ -1153,7 +1153,7 @@ apresenta e defende os seus:</p>
 </tr>
 <tr>
 <td><strong>Enzo Canavero</strong></td>
-<td><strong>1. Cache Redis</strong> (account e exchange) e <strong>2. Circuit breaker + retry</strong> (auth → account, exchange → AwesomeAPI)</td>
+<td><strong>1. Cache Redis</strong> (account e exchange) e <strong>2. Circuit breaker + retry</strong> (auth → account, exchange → BACEN)</td>
 <td><a href="#1-cache-redis-account-e-exchange">§ 1</a>, <a href="#2-circuit-breaker-e-retry-auth-e-exchange">§ 2</a></td>
 </tr>
 <tr>
@@ -1170,8 +1170,8 @@ parado) e hits/misses do cache Redis.</em></p>
 <hr />
 <h2 id="1-cache-redis-account-e-exchange">1. Cache Redis (account e exchange)</h2>
 <p><strong>Problema.</strong> Toda requisição autenticada a <code>/auth/me</code> faz o auth chamar <code>GET /accounts/{id}</code>,
-que vai ao PostgreSQL; e todo <code>GET /exchanges/{from}/{to}</code> iria à AwesomeAPI — uma API externa,
-lenta (centenas de ms) e com limite de uso. Com o gateway escalando para várias réplicas, um
+que vai ao PostgreSQL; e todo <code>GET /exchanges/{from}/{to}</code> iria ao PTAX do BACEN — uma API externa,
+lenta (centenas de ms) e fora do nosso controle. Com o gateway escalando para várias réplicas, um
 cache <strong>local</strong> (por JVM) não seria compartilhado.</p>
 <p><strong>Solução.</strong> Cache-aside com <strong>Redis</strong> compartilhado (hands-on 8): <code>spring-boot-starter-data-redis</code>
 + <code>spring-boot-starter-cache</code>, <code>@EnableCaching</code>, <code>spring.cache.type: redis</code>.</p>
@@ -1234,11 +1234,11 @@ cache <strong>local</strong> (por JVM) não seria compartilhado.</p>
 </code></pre></div>
 <hr />
 <h2 id="2-circuit-breaker-e-retry-auth-e-exchange">2. Circuit breaker e retry (auth e exchange)</h2>
-<p><strong>Problema.</strong> Chamadas síncronas em cadeia propagam falhas: se o <code>account</code> ou a AwesomeAPI ficam
+<p><strong>Problema.</strong> Chamadas síncronas em cadeia propagam falhas: se o <code>account</code> ou o BACEN ficam
 lentos/fora, cada requisição segura uma thread até o timeout, o pool esgota e o serviço que
 chama também cai (falha em cascata — aula <em>Reliability patterns</em>).</p>
 <p><strong>Solução.</strong> <strong>Resilience4j</strong> (<code>resilience4j-spring-boot4</code> + <code>spring-boot-starter-aspectj</code>):</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">auth → account (circuit breaker)</label><label for="__tabbed_1_2">exchange → AwesomeAPI (retry + circuit breaker)</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">auth → account (circuit breaker)</label><label for="__tabbed_1_2">exchange → BACEN (retry + circuit breaker)</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">resilience4j.circuitbreaker.instances.account</span><span class="p">:</span>

@@ -1046,7 +1046,7 @@ feito com ela e o que foi feito pelos integrantes. Neste projeto, a divisão foi
 </tr>
 <tr>
 <td>CI/CD</td>
-<td>workflows do GitHub Actions; stub da AwesomeAPI para o E2E</td>
+<td>workflows do GitHub Actions; stub do provedor de câmbio para o E2E</td>
 <td><code>actionlint</code>; execuções verdes no GitHub Actions e E2E reproduzido localmente (14/14)</td>
 </tr>
 <tr>
@@ -1080,7 +1080,9 @@ GitHub sem confirmar a conta, e poupar o computador (builds um de cada vez).</p>
 <li>no EKS, a AwesomeAPI devolveu <code>429 QuotaExceeded</code> para os IPs dos NAT Gateways (do Mac, 200):
   só o deploy real mostrou que o exchange precisa de API key na nuvem;</li>
 <li>o E2E do GitHub Actions falhava pelo mesmo <code>429</code>, por um motivo externo ao código: trocamos a
-  API real por um stub no CI.</li>
+  API real por um stub no CI;</li>
+<li>com o aviso do professor (16/11) de que APIs gratuitas recusam IPs da AWS, trocamos a
+  AwesomeAPI pelo PTAX do BACEN, que dispensa chave (o stub do CI passou a imitar o PTAX).</li>
 </ul>
 <h2 id="responsabilidade">Responsabilidade</h2>
 <p>Usar IA não tira de nós a responsabilidade de entender e defender o projeto. Os dois sabem

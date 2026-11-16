@@ -1504,7 +1504,7 @@ tempo ligado. Por isso o teardown automático de segurança caiu de 8 h para <st
 <p>A troca foi feita com o cluster no ar: o node group Spot subiu ao lado do antigo, o EKS drenou
 os pods para ele, e o ELB seguiu respondendo 200. O smoke test pelo ELB deu os mesmos
 <strong>11/14</strong> de antes (as 3 falhas eram do câmbio, por falta da API key da AwesomeAPI; com a chave
-no Secret, <strong>14/14</strong>).</p>
+no Secret, <strong>14/14</strong>; desde 16/11 o câmbio usa o PTAX do BACEN, sem chave).</p>
 <p><strong>Avaliado e não aplicado:</strong></p>
 <table>
 <thead>
@@ -1876,7 +1876,7 @@ no cluster. O custo é de centavos. O Docker Hub (padrão do hands-on 4) continu
         pages[GitHub Pages]
     end
     subgraph saas [SaaS / APIs]
-        awesome[AwesomeAPI]
+        awesome[BACEN PTAX]
         gh[GitHub]
     end</code></pre>
 <table>
@@ -1938,9 +1938,9 @@ no cluster. O custo é de centavos. O Docker Hub (padrão do hands-on 4) continu
 <td>servidor web, TLS, CDN</td>
 </tr>
 <tr>
-<td><strong>AwesomeAPI</strong></td>
-<td>SaaS (API)</td>
-<td>cotações de câmbio; a partir da AWS exige API key (grátis até 100 mil req/mês)</td>
+<td><strong>BACEN (PTAX)</strong></td>
+<td>API pública</td>
+<td>cotações de câmbio; sem API key e sem custo, responde para IPs da AWS</td>
 <td>coleta e atualização das cotações</td>
 </tr>
 </tbody>
@@ -2073,7 +2073,7 @@ SLA. Para garantir 99,5 % com folga, use o cenário C.</p>
 </code></pre></div>
 <p>O que no projeto protege o SLO: readiness probes + rolling update (deploy sem downtime),
 circuit breakers (falha rápida e parcial em vez de cascata), cache (o exchange continua
-respondendo por até 60 s com a AwesomeAPI fora), rate limiting (protege contra sobrecarga), HPA
+respondendo por até 60 s com o BACEN fora), rate limiting (protege contra sobrecarga), HPA
 (capacidade acompanha a demanda) e nós em 2 AZs.</p>
 
 

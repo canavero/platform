@@ -1035,7 +1035,7 @@ do jar da interface e o Feign gera o cliente HTTP.</p>
         exchange -.-&gt; redis
         gw -.-&gt; redis
     end
-    exchange --&gt;|HTTPS| awesome[[AwesomeAPI]]
+    exchange --&gt;|HTTPS| awesome[[BACEN PTAX]]
     subgraph obs [Observabilidade]
         prom[Prometheus] --&gt; graf[Grafana]
     end
@@ -1077,7 +1077,7 @@ do jar da interface e o Feign gera o cliente HTTP.</p>
 <td><code>store.exchange</code></td>
 <td style="text-align: right;">8080</td>
 <td><code>GET /exchanges/{from}/{to}</code></td>
-<td>AwesomeAPI, Redis</td>
+<td>BACEN (PTAX), Redis</td>
 </tr>
 </tbody>
 </table>
@@ -1102,7 +1102,7 @@ do jar da interface e o Feign gera o cliente HTTP.</p>
 </tr>
 <tr>
 <td>Comunicação interna</td>
-<td>OpenFeign (auth → account), RestClient (exchange → AwesomeAPI), WebClient (gateway → auth)</td>
+<td>OpenFeign (auth → account), RestClient (exchange → BACEN), WebClient (gateway → auth)</td>
 </tr>
 <tr>
 <td>Segurança</td>
@@ -1159,7 +1159,7 @@ do jar da interface e o Feign gera o cliente HTTP.</p>
     G-&gt;&gt;E: GET /exchanges/USD/BRL + header id-account
     E-&gt;&gt;R: cache exchanges::USD-BRL?
     alt miss
-        E-&gt;&gt;E: AwesomeAPI (retry + circuit breaker)
+        E-&gt;&gt;E: BACEN PTAX (retry + circuit breaker)
         E-&gt;&gt;R: SET (TTL 60 s)
     end
     E--&gt;&gt;U: {"sell":5.668,"buy":5.6666,"date":"...","id-account":"..."}</code></pre>
