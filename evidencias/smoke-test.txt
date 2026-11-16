@@ -1,4 +1,4 @@
-$ ./scripts/smoke-test.sh   # 2026-11-16 15:40 UTC, docker compose no Mac, exchange no PTAX do BACEN (sem API key)
+$ ./scripts/smoke-test.sh   # 2026-11-16 ≈15:35 UTC, docker compose no Mac, exchange no PTAX do BACEN (sem API key)
 ✅ GET /health-check (aberto) -> 200
 ✅ GET /info (aberto) -> 200
 ✅ POST /auth/register -> 200
