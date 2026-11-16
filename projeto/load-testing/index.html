@@ -9,7 +9,7 @@
         <meta name="description" content="Projeto final de Plataformas (Insper) — microsserviços Spring Boot no EKS">
       
       
-        <meta name="author" content="Enzo Canavero e Miguel Damasio">
+        <meta name="author" content="Enzo Canavero e Miguel Damásio">
       
       
         <link rel="canonical" href="https://eumiguelll.github.io/Projeto-PMA/projeto/load-testing/">
@@ -286,6 +286,33 @@
       
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../../rubrica/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Checklist da rubrica
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
     
   
   
@@ -299,10 +326,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
         
           
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
             
   
   
@@ -320,8 +347,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_2">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -722,6 +749,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#video-do-teste-de-carga" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Vídeo do teste de carga
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#resultado-no-eks" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -979,6 +1017,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#video-do-teste-de-carga" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Vídeo do teste de carga
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#resultado-no-eks" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1200,6 +1249,64 @@ O resumo final mostra <code>http_reqs</code>, latência p(95) e os <em>checks</e
 (<code>behavior.scaleDown.stabilizationWindowSeconds</code> = 300 s por padrão). Para mostrar o
 scale-down no vídeo, acelere a gravação nesse trecho. Para recomeçar do zero entre tomadas:
 <code>kubectl scale deployment gateway --replicas=1</code> (o HPA aceita, já que está sem carga).</p>
+<h2 id="video-do-teste-de-carga">Vídeo do teste de carga</h2>
+<video controls preload="metadata" width="100%">
+  <source src="../../videos/teste-de-carga-hpa.mp4" type="video/mp4">
+</video>
+
+<p><a href="../../videos/teste-de-carga-hpa.mp4">Baixar o vídeo</a> · 1 min 27 s, com os trechos de espera acelerados (a
+velocidade aparece no canto superior direito).</p>
+<p>Três painéis, como na página <em>Load Testing</em> da disciplina: <code>watch kubectl get hpa gateway</code>,
+<code>watch kubectl get pods -l app=gateway</code> e o busybox do enunciado (<code>WORKERS=16 ./load-test/busybox.sh</code>).
+Gravado em 16/11/2026 num cluster <strong>kind</strong> local, com os mesmos manifests e o mesmo <code>k8s/deploy.sh</code> do
+EKS: o EKS já tinha mostrado o HPA de 1 para 10 em 15/11 (evidência abaixo), e gravar de novo na
+nuvem só gastaria AWS.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">Hora (UTC)</th>
+<th>HPA do gateway</th>
+<th>O que aconteceu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">00:54:28</td>
+<td>1 réplica, <code>cpu: 1%/50%</code></td>
+<td>o busybox começa (16 loops de <code>wget http://gateway/info</code>)</td>
+</tr>
+<tr>
+<td style="text-align: right;">00:55:11</td>
+<td><strong>4</strong> (<code>cpu: 151%/50%</code>)</td>
+<td>primeira escala, ≈ 45 s depois</td>
+</tr>
+<tr>
+<td style="text-align: right;">00:55:31</td>
+<td><strong>6</strong></td>
+<td></td>
+</tr>
+<tr>
+<td style="text-align: right;">00:55:41</td>
+<td><strong>10</strong> (máximo)</td>
+<td>≈ 75 s após o início da carga</td>
+</tr>
+<tr>
+<td style="text-align: right;">00:56:57</td>
+<td>10</td>
+<td><code>Ctrl+C</code>: fim da carga</td>
+</tr>
+<tr>
+<td style="text-align: right;">01:02:13 → 01:02:43</td>
+<td>10 → 9 → 3 → <strong>2</strong></td>
+<td>scale-down depois da janela de estabilização de 5 min</td>
+</tr>
+<tr>
+<td style="text-align: right;">01:07</td>
+<td><strong>1</strong></td>
+<td>de volta ao mínimo</td>
+</tr>
+</tbody>
+</table>
 <h2 id="resultado-no-eks">Resultado no EKS</h2>
 <p>Cluster <code>eks-store</code> (2 × <code>t3.medium</code>, us-east-2), 15/11/2026. Dois testes: o do enunciado
 (busybox dentro do cluster) e o k6 pelo <strong>Load Balancer público</strong>.</p>

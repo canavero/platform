@@ -9,7 +9,7 @@
         <meta name="description" content="Projeto final de Plataformas (Insper) — microsserviços Spring Boot no EKS">
       
       
-        <meta name="author" content="Enzo Canavero e Miguel Damasio">
+        <meta name="author" content="Enzo Canavero e Miguel Damásio">
       
       
         <link rel="canonical" href="https://eumiguelll.github.io/Projeto-PMA/projeto/bottlenecks/">
@@ -286,6 +286,33 @@
       
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../../rubrica/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Checklist da rubrica
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
     
   
   
@@ -299,10 +326,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
         
           
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
             
   
   
@@ -320,8 +347,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_2">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -536,6 +563,17 @@
       Índice
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#destaques-por-integrante" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Destaques por integrante
+      
+    </span>
+  </a>
+  
+</li>
       
         <li class="md-nav__item">
   <a href="#1-cache-redis-account-e-exchange" class="md-nav__link">
@@ -896,6 +934,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#destaques-por-integrante" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Destaques por integrante
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#1-cache-redis-account-e-exchange" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1085,8 +1134,39 @@ são das execuções reais):</p>
 </tr>
 </tbody>
 </table>
-<p>Destaques do grupo (mínimo de 2 exigido): <strong>1. Cache Redis</strong> e <strong>2. Circuit breaker + retry</strong>,
-com <strong>3. Rate limiting</strong> como terceiro.</p>
+<h3 id="destaques-por-integrante">Destaques por integrante</h3>
+<p>A entrega pede <strong>pelo menos 2 bottlenecks em destaque por integrante</strong>. A dupla tem 6; cada um
+apresenta e defende os seus:</p>
+<table>
+<thead>
+<tr>
+<th>Integrante</th>
+<th>Bottlenecks em destaque</th>
+<th>Onde ver</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Miguel Damásio</strong></td>
+<td><strong>3. Rate limiting</strong> no gateway (token bucket no Redis → <code>429</code>) e <strong>4. Observabilidade</strong> (Prometheus + Grafana, dashboard <em>Store — Bottlenecks</em>)</td>
+<td><a href="#3-rate-limiting-gateway">§ 3</a>, <a href="#4-observabilidade-prometheus-grafana">§ 4</a></td>
+</tr>
+<tr>
+<td><strong>Enzo Canavero</strong></td>
+<td><strong>1. Cache Redis</strong> (account e exchange) e <strong>2. Circuit breaker + retry</strong> (auth → account, exchange → AwesomeAPI)</td>
+<td><a href="#1-cache-redis-account-e-exchange">§ 1</a>, <a href="#2-circuit-breaker-e-retry-auth-e-exchange">§ 2</a></td>
+</tr>
+<tr>
+<td>Dupla</td>
+<td><strong>5. Vulnerability scanning</strong> (Trivy no CI) e <strong>6. Escala horizontal</strong> (HPA + Service + ELB)</td>
+<td><a href="#5-vulnerability-scanning-trivy-no-ci">§ 5</a>, <a href="#6-escala-horizontal-e-balanceamento-hpa-service-elb">§ 6</a></td>
+</tr>
+</tbody>
+</table>
+<p><img alt="Dashboard Store — Bottlenecks no Grafana" src="../../evidencias/grafana-bottlenecks.png" /></p>
+<p><em>Dashboard provisionado (<code>setup/grafana</code>), com o compose local sob carga em 16/11/2026: req/s e
+latência por serviço, <code>429</code> do rate limiting, o circuito <code>auth → account</code> abrindo (account
+parado) e hits/misses do cache Redis.</em></p>
 <hr />
 <h2 id="1-cache-redis-account-e-exchange">1. Cache Redis (account e exchange)</h2>
 <p><strong>Problema.</strong> Toda requisição autenticada a <code>/auth/me</code> faz o auth chamar <code>GET /accounts/{id}</code>,

@@ -9,7 +9,7 @@
         <meta name="description" content="Projeto final de Plataformas (Insper) — microsserviços Spring Boot no EKS">
       
       
-        <meta name="author" content="Enzo Canavero e Miguel Damasio">
+        <meta name="author" content="Enzo Canavero e Miguel Damásio">
       
       
         <link rel="canonical" href="https://eumiguelll.github.io/Projeto-PMA/projeto/custos/">
@@ -286,6 +286,33 @@
       
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../../rubrica/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Checklist da rubrica
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
     
   
   
@@ -299,10 +326,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
         
           
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
             
   
   
@@ -320,8 +347,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_2">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1733,8 +1760,54 @@ o que o cenário A economiza aqui, ele paga em disponibilidade.</p>
 <li><strong>Amazon ECR</strong> — 2 GB armazenados.</li>
 </ol>
 <p>O total deve ficar perto da tabela A (≈ US$ 155/mês; o Spot da calculadora varia um pouco).
-Para o cenário C, acrescente o RDS for PostgreSQL (<code>db.t4g.small</code>, Multi-AZ, 50 GB gp3).
-<strong>Link da estimativa:</strong> <em>a gerar no calculator e colar aqui</em>.</p>
+Para o cenário C, acrescente o RDS for PostgreSQL (<code>db.t4g.small</code>, Multi-AZ, 50 GB gp3).</p>
+<p><strong>Link da estimativa (cenário A, us-east-2):</strong>
+<a href="https://calculator.aws/#/estimate?id=9a7c8ac46c02728fc7e7ae43ea1fff1426cc25f2">https://calculator.aws/#/estimate?id=9a7c8ac46c02728fc7e7ae43ea1fff1426cc25f2</a>
+(gerada em 16/11/2026; o link público vale por 1 ano)</p>
+<table>
+<thead>
+<tr>
+<th>Serviço na calculadora</th>
+<th>Configuração</th>
+<th style="text-align: right;">US$/mês</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Amazon EKS</td>
+<td>1 cluster, suporte padrão</td>
+<td style="text-align: right;">73,00</td>
+</tr>
+<tr>
+<td>Amazon EC2</td>
+<td>2 × <code>t3.medium</code> Linux, <strong>Spot</strong> (desconto histórico de 69 % que a calculadora sugere) + EBS 20 GB cada</td>
+<td style="text-align: right;">22,03</td>
+</tr>
+<tr>
+<td>Amazon VPC</td>
+<td>1 NAT Gateway (1 AZ, 20 GB) + 3 IPv4 públicos</td>
+<td style="text-align: right;">44,70</td>
+</tr>
+<tr>
+<td>Elastic Load Balancing</td>
+<td>1 Classic Load Balancer (≈ 20 GB/mês)</td>
+<td style="text-align: right;">18,43</td>
+</tr>
+<tr>
+<td>Amazon ECR</td>
+<td>2 GB armazenados</td>
+<td style="text-align: right;">0,20</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td></td>
+<td style="text-align: right;"><strong>158,36</strong></td>
+</tr>
+</tbody>
+</table>
+<p>A diferença para a tabela A (US$ 154,77) é o Spot: a calculadora usa o desconto médio histórico
+(69 %), e nós medimos 75 % no dia do deploy. A versão atual da calculadora modela o NAT como
+<em>Regional NAT Gateway</em>; com 1 AZ ativa, o preço é o mesmo do NAT zonal (US$ 0,045/h + US$ 0,045/GB).</p>
 <h2 id="3-ecr-docker-hub">3. ECR × Docker Hub</h2>
 <table>
 <thead>
